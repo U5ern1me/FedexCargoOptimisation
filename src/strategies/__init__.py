@@ -1,1 +1,2 @@
-strategies = {}
+import MLPStrategy
+strategies = {'MLPStrategy': MLPStrategy}
