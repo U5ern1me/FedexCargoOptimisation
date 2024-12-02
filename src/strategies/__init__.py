@@ -1,5 +1,7 @@
-from .drl_strategy import DRL_Strategy
+from .gurobi_strategy import GurobiStrategy
+from .drl_strategy import DRLStrategy
 
 strategies = {
-    "DRL": DRL_Strategy
+    "drl": DRLStrategy,
+    "gurobi": GurobiStrategy
 }

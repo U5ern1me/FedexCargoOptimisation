@@ -13,6 +13,7 @@ fastapi-cli==0.0.5
 filelock==3.16.1
 fonttools==4.55.0
 fsspec==2024.10.0
+gurobipy==12.0.0
 gymnasium==1.0.0
 h11==0.14.0
 httpcore==1.0.7
