@@ -1,3 +1,7 @@
 from .gurobi_strategy import GurobiStrategy
+from .drl_strategy import DRLStrategy
 
-strategies = {"gurobi": GurobiStrategy}
+strategies = {
+    "drl": DRLStrategy,
+    "gurobi": GurobiStrategy
+}

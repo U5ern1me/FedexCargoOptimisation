@@ -5,6 +5,8 @@ import json
 from models.package import Package
 from models.uld import ULD
 
+COST_MAX = 1000000
+
 
 def read_packages(file_path):
     """
@@ -25,7 +27,7 @@ def read_packages(file_path):
                 weight=row["Weight (kg)"],
                 priority=priority,
                 delay_cost=int(
-                    row["Cost of Delay"] if row["Cost of Delay"] != "-" else 0
+                    row["Cost of Delay"] if row["Cost of Delay"] != "-" else COST_MAX
                 ),
             )
         )
