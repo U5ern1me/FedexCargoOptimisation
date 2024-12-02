@@ -1,1 +1,1 @@
-from .drl_strategy import DRL_Strategy
+from .drl_strategy import DRLStrategy
