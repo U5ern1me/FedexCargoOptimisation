@@ -13,7 +13,7 @@ config = load_config(os.path.join(os.path.dirname(__file__), "gurobi.config"))
 
 
 class GurobiStrategy(Strategy):
-    def solve(self):
+    async def solve(self):
         solver = GurobiSolver(
             packages=self.packages, ulds=self.ulds, k_cost=self.k_cost, config=config
         )

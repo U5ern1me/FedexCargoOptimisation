@@ -3,17 +3,17 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import hexaly.optimizer
-
 from strategies.strategy import Strategy
 from .hexaly_utils import HexalySolver
+
 from utils.io import load_config
+import hexaly.optimizer
 
 config = load_config(os.path.join(os.path.dirname(__file__), "hexaly.config"))
 
 
 class HexalyStrategy(Strategy):
-    def solve(self):
+    async def solve(self):
         with hexaly.optimizer.HexalyOptimizer() as optimizer:
             model = optimizer.model
             try:

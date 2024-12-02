@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from abc import ABC, abstractmethod
 import time
+import asyncio
 
 
 class Strategy(ABC):
@@ -27,7 +28,7 @@ class Strategy(ABC):
         self.solution_found = False
         self.time_start = time.time()
 
-    def get_allocation(self):
+    async def get_allocation(self):
         """
         Get the allocation of the packages to the ULDs.
         """
@@ -73,26 +74,26 @@ class Strategy(ABC):
 
         return total_cost
 
-    def get_outputs(self):
+    async def get_outputs(self):
         """
         Get the allocation, total cost, number of packed packages, and number of priority ULDs.
         """
         total_cost = self.calculate_cost()
-        allocation = self.get_allocation()
+        allocation = await self.get_allocation()
         num_packed = self.get_num_packed()
         num_priority_uld = self.get_num_priority_uld()
 
         return allocation, total_cost, num_packed, num_priority_uld
 
     @abstractmethod
-    def solve(self):
+    async def solve(self):
         """
         Solve the ULD packing problem. Update the packages with the ULD ID and the end points.
         """
 
         pass
 
-    def run(self):
+    async def run(self):
         """
         Run the strategy and write the output to a file.
         """
@@ -103,12 +104,12 @@ class Strategy(ABC):
 
         self.start_time = time.time()
 
-        self.solve()
+        await self.solve()
 
         self.time_end = time.time()
         self.solution_found = True
 
-    def validate(self):
+    async def validate(self):
         """
         Validate the solution. If invalid, set the error message and return False.
         """
@@ -176,7 +177,7 @@ class Strategy(ABC):
 
         return True
 
-    def get_solution_json(self):
+    async def get_solution_json(self):
         """
         Get the solution in the json format for the API.
         """

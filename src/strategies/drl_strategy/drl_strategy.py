@@ -12,6 +12,6 @@ config = load_config(os.path.join(os.path.dirname(__file__), "drl.config"))
 
 
 class DRLStrategy(Strategy):
-    def solve(self):
+    async def solve(self):
         model = DRL_Model()
         model.train(self.ulds, self.packages, config)

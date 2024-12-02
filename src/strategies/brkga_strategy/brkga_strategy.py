@@ -12,7 +12,7 @@ config = load_config(os.path.join(os.path.dirname(__file__), "brkga.config"))
 
 
 class BRKGAStrategy(Strategy):
-    def solve(self):
+    async def solve(self):
 
         inputs = {"packages": self.packages, "ulds": self.ulds, "k": self.k_cost}
 

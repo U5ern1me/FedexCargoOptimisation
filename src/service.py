@@ -31,8 +31,6 @@ class APIService:
 
         self.solutions = {}  # Dictionary to store solver instances
 
-        self.loop = asyncio.get_event_loop()
-
         # Register routes
         self.app.post("/filepack")(self.upload_files)
         self.app.get("/status/{request_id}")(self.check_status)
@@ -48,12 +46,6 @@ class APIService:
             ).total_seconds() > 24 * 60 * 60:
                 shutil.rmtree(os.path.join(self.input_folder, request_id))
                 del self.solutions[request_id]
-
-    async def _run_solver(self, instance):
-        """
-        Run the solver in a thread pool to avoid blocking.
-        """
-        await self.loop.run_in_executor(None, instance.run)
 
     async def upload_files(
         self,
@@ -131,7 +123,7 @@ class APIService:
             )
 
             # Create an async task for the solver using thread pool
-            asyncio.create_task(self._run_solver(self.solutions[request_name]))
+            asyncio.create_task(self.solutions[request_name].run())
 
             return JSONResponse(
                 content={
@@ -195,7 +187,7 @@ class APIService:
             return JSONResponse(
                 content={
                     "request_id": request_id,
-                    "solution": self.solutions[request_id].get_solution_json(),
+                    "solution": await self.solutions[request_id].get_solution_json(),
                 }
             )
         except Exception as e:
