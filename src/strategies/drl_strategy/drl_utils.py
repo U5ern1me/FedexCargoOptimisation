@@ -1,23 +1,19 @@
-# Standard library imports
-import os
 import copy
 
-# Third-party imports
 import numpy as np
-import pandas as pd
 import torch
 import torch.nn as nn
-import torch.optim as optim
 import gymnasium as gym
 from gymnasium import spaces
 from stable_baselines3 import A2C, PPO
 
-## Define the package class for the DRL solver
-class Package():
-    def __init__(self,id,length,width,height,weight,Priority,delay_cost):
-        """
-        Initialize the package for the DRL solver
-        """
+
+class Package:
+    """
+    Package overwrite for the DRL solver
+    """
+
+    def __init__(self, id, length, width, height, weight, Priority, delay_cost):
         self.id = id
         self.length = length
         self.width = width
@@ -43,15 +39,16 @@ class Package():
         self.current_postion = current_position
         self.orientation = orientaion
 
-    def orient(self,orientation):
+    def orient(self, orientation):
         """
         return the orientated package dimensions based on the orientation
         """
         length = self.length
         width = self.width
         height = self.height
-        if orientation == 1: pass
-        elif orientation == 2: 
+        if orientation == 1:
+            pass
+        elif orientation == 2:
             length, height, width = height, width, length
         elif orientation == 3:
             length, height, width = width, length, height
@@ -61,8 +58,8 @@ class Package():
             length, width, height = length, height, width
         elif orientation == 6:
             length, width, height = height, width, length
-        return length,width,height
-    
+        return length, width, height
+
     def reset(self):
         """
         Reset the package to its initial state
@@ -71,26 +68,29 @@ class Package():
         self.current_postion = None
         self.orientation = None
 
-## Define the package class for the DRL solver
-class Package_DRL():
+
+class Package_DRL:
+    """
+    Package list for the DRL solver
+    """
+
     def __init__(self, packages):
-        """
-        Initialize the packages for the DRL solver
-        """
         self.package_ids = []
         self.priority_count = 0
         self.packages = []
         for package in packages:
             self.package_ids.append(package.id)
-            self.packages.append(Package(
-                package.id,
-                package.length,
-                package.width,
-                package.height,
-                package.weight,
-                package.priority,
-                package.delay_cost
-            ))
+            self.packages.append(
+                Package(
+                    package.id,
+                    package.length,
+                    package.width,
+                    package.height,
+                    package.weight,
+                    package.priority,
+                    package.delay_cost,
+                )
+            )
             if self.packages[-1].priority == 1:
                 self.priority_count += 1
 
@@ -101,12 +101,13 @@ class Package_DRL():
         for package in self.packages:
             package.reset()
 
-## Define the ULD class for the DRL solver
-class ULD():
-    def __init__(self,id,length,width,height,max_weight_limit):
-        """
-        Initialize the ULD for the DRL solver
-        """
+
+class ULD:
+    """
+    ULD overwrite for the DRL solver
+    """
+
+    def __init__(self, id, length, width, height, max_weight_limit):
         self.id = id
         self.length = length
         self.width = width
@@ -117,60 +118,71 @@ class ULD():
         self.remaining_volume = self.max_volume
         self.package_assignments = []
 
-    def update_package_assignment(self,package_ : Package,orientation):
+    def update_package_assignment(self, package_: Package, orientation):
         """
         Update the package assignment of the ULD
         """
-        length,width,height = package_.orient(orientation)
-        self.package_assignments.append({
-            "Pack_map": package_,
-            "x1":package_.current_postion[0],
-            "y1":package_.current_postion[1],
-            "z1":package_.current_postion[2],
-            "x2":package_.current_postion[0] + length,
-            "y2":package_.current_postion[1] + width,
-            "z2":package_.current_postion[2] + height,
-        })
+        length, width, height = package_.orient(orientation)
+        self.package_assignments.append(
+            {
+                "Pack_map": package_,
+                "x1": package_.current_postion[0],
+                "y1": package_.current_postion[1],
+                "z1": package_.current_postion[2],
+                "x2": package_.current_postion[0] + length,
+                "y2": package_.current_postion[1] + width,
+                "z2": package_.current_postion[2] + height,
+            }
+        )
 
         self.remaining_weight -= package_.weight
-        self.remaining_volume -= length*width*height
+        self.remaining_volume -= length * width * height
+
     def reset(self):
         """
         Reset the ULD to its initial state
-        """ 
+        """
         self.remaining_weight = self.max_weight_limit
         self.remaining_volume = self.max_volume
         self.package_assignments = []
 
-## Define the ULD class for the DRL solver
-class ULD_DRL():
-    def __init__(self, ulds : list):
-        """
-        Initialize the ULD list
-        """
+
+class ULD_DRL:
+    """
+    ULD list for the DRL solver
+    """
+
+    def __init__(self, ulds: list):
         self.ulds = []
         for uld in ulds:
             self.ulds.append(
-                ULD(uld.id,uld.length, uld.width, uld.height, uld.weight_limit)
+                ULD(uld.id, uld.length, uld.width, uld.height, uld.weight_limit)
             )
+
     def reset(self):
         """
         Reset the ULD to its initial state
-        """ 
+        """
         for uld in self.ulds:
             uld.reset()
 
 
-## Define the environment class for the DRL solver
 class Bin_Packing_Env(gym.Env):
+    """
+    Bin Packing Environment for the DRL solver
+    """
+
     metadata = {"render_modes": ["human"], "render_fps": 30}
 
-    def __init__(self,ulds_ : ULD_DRL, packages_: Package_DRL, ulds_solver: list, packages_solver: list):
-        """
-        Initialize the environment for the DRL solver
-        """
-        super(Bin_Packing_Env,self).__init__()
-        self.seed_value = None  
+    def __init__(
+        self,
+        ulds_: ULD_DRL,
+        packages_: Package_DRL,
+        ulds_solver: list,
+        packages_solver: list,
+    ):
+        super(Bin_Packing_Env, self).__init__()
+        self.seed_value = None
         self.step_count = 0
         self.max = 0
         self.solver_uld = ulds_solver
@@ -179,12 +191,14 @@ class Bin_Packing_Env(gym.Env):
         self.packages_ = copy.deepcopy(packages_)
         self.packages_placed = 0
         self.packages_left = len(packages_.package_ids)
-        self.packages_placed_list = [] 
+        self.packages_placed_list = []
         self.ulds_used_for_Priority = []
         self.placed = np.zeros(shape=(len(self.packages_.package_ids),))
 
         ## Calculate the maximum dimensions for the DRL solver
-        length, width, height,self.max_weight_limit = calculate_max_dim(self.uld_data.ulds)
+        length, width, height, self.max_weight_limit = calculate_max_dim(
+            self.uld_data.ulds
+        )
 
         ## Set the maximum dimensions for the DRL solver
         self.max_l = length
@@ -192,15 +206,10 @@ class Bin_Packing_Env(gym.Env):
         self.max_h = height
 
         ## Calculate the diagonal for the DRL solver for the reward function
-        self.diagonal = ((length**2 + width**2)**0.5)
+        self.diagonal = (length**2 + width**2) ** 0.5
 
         ## Set the action space for the DRL solver
-        self.action_space = spaces.Box(
-            low=-1,
-            high=1,
-            dtype=np.float32,
-            shape=(5,)
-        )
+        self.action_space = spaces.Box(low=-1, high=1, dtype=np.float32, shape=(5,))
 
         ## Initialize the rewards list for the DRL solver
         self.rewards = []
@@ -217,24 +226,29 @@ class Bin_Packing_Env(gym.Env):
         ## Calculate the observation space for the DRL solver
         Height_dim = 0
         for height_map in self.height_map:
-            Height_dim+= (height_map.shape[0] * height_map.shape[1])
+            Height_dim += height_map.shape[0] * height_map.shape[1]
 
         ## Set the observation space for the DRL solver
         self.observation_space = spaces.Box(
-            low=0, 
+            low=0,
             high=10000,
-            shape=(Height_dim+(len(self.packages_.package_ids)*6)+len(self.uld_data.ulds)+self.placed.shape[0],), 
-            dtype=np.float32
-        )   
+            shape=(
+                Height_dim
+                + (len(self.packages_.package_ids) * 6)
+                + len(self.uld_data.ulds)
+                + self.placed.shape[0],
+            ),
+            dtype=np.float32,
+        )
 
-    def mask_action(self,action):
+    def mask_action(self, action):
         """
         Mask the action based on the termination and info
         """
         termination = False
         info = {}
 
-        ## Extract the action values    
+        ## Extract the action values
         package_index = action[1]
         uld_index = action[0]
         orientation = action[2]
@@ -245,73 +259,76 @@ class Bin_Packing_Env(gym.Env):
         if package_index in self.packages_placed_list:
             termination = True
             info = {
-                "Terminated":True,
+                "Terminated": True,
                 "Termination_Reason": "Package already placed",
                 "message": f"Termination : package already placed whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
-                "data": {
-                }
+                "data": {},
             }
-            return termination,info 
-        
+            return termination, info
+
         ## Check if the package weight is greater than the remaining weight of the ULD
-        if self.packages_.packages[package_index].weight > self.uld_data.ulds[uld_index].remaining_weight:
+        if (
+            self.packages_.packages[package_index].weight
+            > self.uld_data.ulds[uld_index].remaining_weight
+        ):
             termination = True
             info = {
-                "Terminated":True,
+                "Terminated": True,
                 "Termination_Reason": "Weight limit exceeded",
                 "message": f"Termination : Weight limit exceeded whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
-                "data": {      
-                }
+                "data": {},
             }
-            return termination,info 
+            return termination, info
 
         ## Calculate the orientated package dimensions
-        length,width,height = self.packages_.packages[package_index].orient(orientation)
+        length, width, height = self.packages_.packages[package_index].orient(
+            orientation
+        )
 
         ## Check if the package is contractable
         height_map = self.height_map[uld_index]
-        if(x+length-1 >= height_map.shape[0] or y+width-1 >= height_map.shape[1]):
+        if (
+            x + length - 1 >= height_map.shape[0]
+            or y + width - 1 >= height_map.shape[1]
+        ):
             termination = True
             info = {
-                "Terminated":True,
+                "Terminated": True,
                 "Termination_Reason": "Contractability issues",
                 "message": f"Termination : Contractability issues exceeded whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
-                "data": {
-                }
+                "data": {},
             }
-            return termination,info
+            return termination, info
 
         ## Calculate the height at the given coordinates
-        height_at_xy = height_map[x,y].item()
+        height_at_xy = height_map[x, y].item()
 
         ## Check if the height of the package is greater than the height of the ULD
-        if (height_at_xy + height > self.uld_data.ulds[uld_index].height):
+        if height_at_xy + height > self.uld_data.ulds[uld_index].height:
             termination = True
             info = {
-                "Terminated":True,
+                "Terminated": True,
                 "Termination_Reason": "Height exceeded",
                 "message": f"Termination : Height exceeded whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
-                "data": {
-                }
+                "data": {},
             }
-            return termination,info 
+            return termination, info
 
         ## Check if the package overlaps with any other package
-        for i in range(x,x+length):
-            for j in range(y,y+width):
+        for i in range(x, x + length):
+            for j in range(y, y + width):
                 if height_map[i][j] > height_at_xy:
                     termination = True
                     info = {
-                        "Terminated":True,
+                        "Terminated": True,
                         "Termination_Reason": "Overlap issues",
                         "message": f"Termination : Overlap issues exceeded whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
-                        "data": {
-                        }
+                        "data": {},
                     }
-                    return termination,info
-        return termination,info
+                    return termination, info
+        return termination, info
 
-    def calculate_reward(self,termination,action,reason):
+    def calculate_reward(self, termination, action, reason):
         """
         Calculate the reward for the DRL solver
         """
@@ -333,14 +350,14 @@ class Bin_Packing_Env(gym.Env):
             elif reason == "Weight limit exceeded":
                 reward = 0
             elif reason == "Contractability issues":
-                reward = 0   
+                reward = 0
             elif reason == "Height exceeded":
                 reward = 0
             else:
                 reward = 0
         else:
             ## Calculate the priority factor discounting
-            if(self.priority_placed < self.total_priority_available):
+            if self.priority_placed < self.total_priority_available:
                 priority_factor_discounting = 0.5
             else:
                 priority_factor_discounting = 1
@@ -350,16 +367,24 @@ class Bin_Packing_Env(gym.Env):
             after_update_height = height_map[action[3]][action[4]].item()
 
             ## Calculate the reward
-            reward += package_index*10
-            reward += (x+y)*5
-            reward += (10*((self.uld_data.ulds[uld_index].max_volume - self.uld_data.ulds[uld_index].remaining_volume)/self.uld_data.ulds[uld_index].max_volume))
-            reward += ((self.uld_data.ulds[uld_index].height - after_update_height)/self.uld_data.ulds[uld_index].height)
+            reward += package_index * 10
+            reward += (x + y) * 5
+            reward += 10 * (
+                (
+                    self.uld_data.ulds[uld_index].max_volume
+                    - self.uld_data.ulds[uld_index].remaining_volume
+                )
+                / self.uld_data.ulds[uld_index].max_volume
+            )
+            reward += (
+                self.uld_data.ulds[uld_index].height - after_update_height
+            ) / self.uld_data.ulds[uld_index].height
             reward += 10
-            if(self.packages_.packages[package_index].priority != 1):
+            if self.packages_.packages[package_index].priority != 1:
                 reward *= priority_factor_discounting
 
         ## Update the maximum packages placed
-        if(self.packages_placed>self.max):
+        if self.packages_placed > self.max:
             self.max = self.packages_placed
 
         return reward
@@ -369,11 +394,11 @@ class Bin_Packing_Env(gym.Env):
         Takes an action and updates the environment.
         """
         ## DENORMALIZING THE ACTION
-        action[0] = abs(action[0])*(len(self.uld_data.ulds)-1)
-        action[1] = abs(action[1])*(len(self.packages_.package_ids)-1)
-        action[2] = abs(action[2])*5 + 1
-        action[3] = abs(action[3])*self.max_l
-        action[4] = abs(action[4])*self.max_w
+        action[0] = abs(action[0]) * (len(self.uld_data.ulds) - 1)
+        action[1] = abs(action[1]) * (len(self.packages_.package_ids) - 1)
+        action[2] = abs(action[2]) * 5 + 1
+        action[3] = abs(action[3]) * self.max_l
+        action[4] = abs(action[4]) * self.max_w
 
         ## Convert the action to integer
         action = action.astype(np.int32)
@@ -387,12 +412,14 @@ class Bin_Packing_Env(gym.Env):
         self.reward = 0
         self.observation = []
         self.truncated = False
-        self.terminated,self.info = self.mask_action(action)
+        self.terminated, self.info = self.mask_action(action)
 
         ## If the package is terminated
-        if(self.terminated):
+        if self.terminated:
             self.observation = self.get_observation()
-            self.reward = self.calculate_reward(self.terminated,action,self.info["Termination_Reason"])
+            self.reward = self.calculate_reward(
+                self.terminated, action, self.info["Termination_Reason"]
+            )
             self.rewards.append(self.reward)
             self.reward = float(self.reward)
             return self.observation, self.reward, False, False, self.info
@@ -401,49 +428,71 @@ class Bin_Packing_Env(gym.Env):
             self.update_environment(action)
 
             ## Check if all the packages are placed
-            if(self.packages_left == 0):
+            if self.packages_left == 0:
                 self.terminated = True
                 self.info = {
-                    "Terminated":True,
+                    "Terminated": True,
                     "Termination_Reason": "Successfully placed all the packages",
                     "message": "Successfully placed all the packages",
                 }
             else:
                 self.terminated = False
                 self.info = {
-                    "Terminated":False,
+                    "Terminated": False,
                     "Termination_Reason": "Successfully placed a package",
                     "message": "Successfully placed a package",
                 }
             ## Calculate the reward
-            self.reward = self.calculate_reward(self.terminated,action,self.info["Termination_Reason"])
+            self.reward = self.calculate_reward(
+                self.terminated, action, self.info["Termination_Reason"]
+            )
             self.reward = float(self.reward)
             self.rewards.append(self.reward)
             self.observation = self.get_observation()
 
         return self.observation, self.reward, self.terminated, self.truncated, self.info
 
-    def update_environment(self,action):
+    def update_environment(self, action):
         """
         Update the environment based on the action
         """
         ## Update the package ULD
-        self.packages_.packages[action[1]].update_ULD(self.uld_data.ulds[action[0]].id,[action[3],action[4],self.height_map[action[0]][action[3]][action[4]].item()],action[2])   
+        self.packages_.packages[action[1]].update_ULD(
+            self.uld_data.ulds[action[0]].id,
+            [
+                action[3],
+                action[4],
+                self.height_map[action[0]][action[3]][action[4]].item(),
+            ],
+            action[2],
+        )
 
         ## Update the packages placed list
         self.packages_placed_list.append([action[1]])
 
         ## Update the ULD package assignment
-        self.uld_data.ulds[action[0]].update_package_assignment(self.packages_.packages[action[1]],action[2])
+        self.uld_data.ulds[action[0]].update_package_assignment(
+            self.packages_.packages[action[1]], action[2]
+        )
 
         ## Update the solver ULD package assignment
-        self.solver_uld[action[0]].packages.append(self.packages_.packages[action[1]].id)
+        self.solver_uld[action[0]].packages.append(
+            self.packages_.packages[action[1]].id
+        )
 
         ## Update the solver package ULD assignment
         self.solver_packages[action[1]].uld_id = self.uld_data.ulds[action[0]].id
-        self.solver_packages[action[1]].point1 = [action[3],action[4],self.height_map[action[0]][action[3]][action[4]].item()]
-        self.solver_packages[action[1]].point2 = [action[3]+self.packages_.packages[action[1]].length,action[4]+self.packages_.packages[action[1]].width,self.height_map[action[0]][action[3]][action[4]].item()+self.packages_.packages[action[1]].height]
-
+        self.solver_packages[action[1]].point1 = [
+            action[3],
+            action[4],
+            self.height_map[action[0]][action[3]][action[4]].item(),
+        ]
+        self.solver_packages[action[1]].point2 = [
+            action[3] + self.packages_.packages[action[1]].length,
+            action[4] + self.packages_.packages[action[1]].width,
+            self.height_map[action[0]][action[3]][action[4]].item()
+            + self.packages_.packages[action[1]].height,
+        ]
 
         ## Update the packages left and placed
         self.packages_left -= 1
@@ -451,22 +500,24 @@ class Bin_Packing_Env(gym.Env):
         self.placed[action[1]] = 1
 
         ## Update the priority placed and ULD used for priority
-        if(self.packages_.packages[action[1]].priority):
-            if(self.uld_data.ulds[action[0]].id not in self.ulds_used_for_Priority):
+        if self.packages_.packages[action[1]].priority:
+            if self.uld_data.ulds[action[0]].id not in self.ulds_used_for_Priority:
                 self.ulds_used_for_Priority.append(self.uld_data.ulds[action[0]].id)
 
         ## Calculate the orientated package dimensions
-        package_length,package_width,package_height = self.packages_.packages[action[1]].orient(action[2])
+        package_length, package_width, package_height = self.packages_.packages[
+            action[1]
+        ].orient(action[2])
 
         ## Calculate the height map
         height_map = self.height_map[action[0]]
         height_to_set = height_map[action[3]][action[4]].item() + package_height
 
         ## Update the height map
-        for i in range(action[3],action[3]+package_length):
-            for j in range(action[4],action[4]+package_width):
+        for i in range(action[3], action[3] + package_length):
+            for j in range(action[4], action[4] + package_width):
                 height_map[i][j] = height_to_set
-        
+
     def get_observation(self):
         """
         Get the observation for the DRL solver
@@ -478,21 +529,26 @@ class Bin_Packing_Env(gym.Env):
         ## Flatten the height map
         for height_map in self.height_map:
             flat_height_map = torch.flatten(height_map).tolist()
-            flat_height_map = normalize_list(flat_height_map,self.max_h)
+            flat_height_map = normalize_list(flat_height_map, self.max_h)
             self.observation.extend(flat_height_map)
-            self.observation.append(float(self.uld_data.ulds[uld].remaining_weight)/self.uld_data.ulds[uld].max_weight_limit)
+            self.observation.append(
+                float(self.uld_data.ulds[uld].remaining_weight)
+                / self.uld_data.ulds[uld].max_weight_limit
+            )
             uld += 1
-        
+
         ## Flatten the packages
         for package in self.packages_.packages:
-            self.observation.extend([
-                float(package.length)/self.max_l,
-                float(package.width)/self.max_w,
-                float(package.height)/self.max_h,
-                float(package.weight)/self.max_weight_limit,
-                float(package.priority),
-                float(package.delay_cost)/10000,
-            ])
+            self.observation.extend(
+                [
+                    float(package.length) / self.max_l,
+                    float(package.width) / self.max_w,
+                    float(package.height) / self.max_h,
+                    float(package.weight) / self.max_weight_limit,
+                    float(package.priority),
+                    float(package.delay_cost) / 10000,
+                ]
+            )
 
         ## Flatten the placed packages
         self.observation.extend(self.placed.tolist())
@@ -507,7 +563,7 @@ class Bin_Packing_Env(gym.Env):
         Seed the environment for the DRL solver
         """
         self.seed_value = seed
-        if(self.seed_value == None):
+        if self.seed_value == None:
             self.seed_value = np.random.seed(self.seed_value)
 
     def reset(self, seed=None):
@@ -516,10 +572,7 @@ class Bin_Packing_Env(gym.Env):
         """
         ## Initialize the terminated and info
         self.terminated = False
-        info = {
-            "message": "Resetting Env....",
-            "Data": {}
-        }
+        info = {"message": "Resetting Env....", "Data": {}}
 
         ## Reset the ULD and packages
         self.uld_data.reset()
@@ -531,7 +584,7 @@ class Bin_Packing_Env(gym.Env):
         ## Initialize the packages placed and left
         self.packages_placed = 0
         self.packages_left = len(self.packages_.package_ids)
-        self.packages_placed_list = [] 
+        self.packages_placed_list = []
         self.ulds_used_for_Priority = []
         self.placed = np.zeros(shape=(len(self.packages_.package_ids),))
         self.priority_placed = 0
@@ -540,7 +593,7 @@ class Bin_Packing_Env(gym.Env):
         self.observation = self.get_observation()
 
         return self.observation, info
-    
+
     def close(self):
         """
         Close the environment for the DRL solver
@@ -558,17 +611,17 @@ class Bin_Packing_Env(gym.Env):
         del self.packages_placed
         del self.priority_placed
 
-## Define the height map function for the DRL solver
-def Height_map(ulds_ : ULD_DRL) -> list:
+
+def Height_map(ulds_: ULD_DRL) -> list:
     """
     Create the height map for the DRL solver
     """
     tensor_list = []
     for uld in ulds_.ulds:
-        tensor_list.append(torch.zeros(size=(uld.length,uld.width)))
+        tensor_list.append(torch.zeros(size=(uld.length, uld.width)))
     return tensor_list
 
-## Define the calculate maximum dimensions function for the DRL solver
+
 def calculate_max_dim(ulds_: list):
     """
     Calculate the maximum dimensions for the DRL solver
@@ -578,31 +631,33 @@ def calculate_max_dim(ulds_: list):
     height = 0
     max_weight_limit = 0
     for uld in ulds_:
-        if uld.length > length : length = uld.length
-        if uld.width  > width : width = uld.width
-        if uld.height > height : height = uld.height
-        if uld.max_weight_limit > max_weight_limit : max_weight_limit = uld.max_weight_limit
-    return length,width,height,max_weight_limit
+        if uld.length > length:
+            length = uld.length
+        if uld.width > width:
+            width = uld.width
+        if uld.height > height:
+            height = uld.height
+        if uld.max_weight_limit > max_weight_limit:
+            max_weight_limit = uld.max_weight_limit
+    return length, width, height, max_weight_limit
 
-## Define the normalize list function for the DRL solver
+
 def normalize_list(list, max_value):
     """
     Normalize the list for the DRL solver
     """
-    return [x/max_value for x in list]
+    return [x / max_value for x in list]
 
-## Define the DRL model class for the DRL solver
-class DRL_Model(nn.Module): 
+
+class DRL_Model(nn.Module):
     def __init__(self):
-        """
-        Initialize the DRL model
-        """
-        super(DRL_Model,self).__init__()
-    def train(self,ULD_data: list, Package_data: list, model_params: dict) -> str:
+        super(DRL_Model, self).__init__()
+
+    def train(self, ULD_data: list, Package_data: list, model_params: dict) -> str:
         """
         Solve using DRL model
         """
-        try:    
+        try:
             ## Print the starting message
             print("Starting DRL\n")
 
@@ -611,37 +666,41 @@ class DRL_Model(nn.Module):
             PACKAGES_DRL_ = Package_DRL(Package_data)
 
             ## Initialize the environment
-            env = Bin_Packing_Env(ULD_DRL_,PACKAGES_DRL_,ULD_data,Package_data)
+            env = Bin_Packing_Env(ULD_DRL_, PACKAGES_DRL_, ULD_data, Package_data)
             env.reset()
 
             ## Initialize the model
             if model_params["model_name"] == "A2C":
                 model = A2C(
-                    "MlpPolicy", 
+                    "MlpPolicy",
                     env,
-                    ent_coef=model_params["ent_coef"],  
+                    ent_coef=model_params["ent_coef"],
                     learning_rate=model_params["learning_rate"],
                     verbose=2,
                     use_sde=model_params["use_sde"],
                     sde_sample_freq=model_params["sde_sample_freq"],
-                    gamma=model_params["gamma"]
+                    gamma=model_params["gamma"],
                 )
             elif model_params["model_name"] == "PPO":
                 model = PPO(
-                    "MlpPolicy", 
+                    "MlpPolicy",
                     env,
                     verbose=1,
                     ent_coef=model_params["ent_coef"],
                     learning_rate=model_params["learning_rate"],
                     use_sde=model_params["use_sde"],
                     sde_sample_freq=model_params["sde_sample_freq"],
-                    gamma=model_params["gamma"]
+                    gamma=model_params["gamma"],
                 )
             else:
                 raise ValueError("Invalid model name")
-            
+
             ## Train the model
-            model.learn(total_timesteps = model_params["total_timesteps"],reset_num_timesteps=False, tb_log_name = model_params["model_name"])
+            model.learn(
+                total_timesteps=model_params["total_timesteps"],
+                reset_num_timesteps=False,
+                tb_log_name=model_params["model_name"],
+            )
 
             ## Close the environment
             env.close()
@@ -650,4 +709,3 @@ class DRL_Model(nn.Module):
             print("Ending DRL\n")
         except Exception as e:
             raise e
-
