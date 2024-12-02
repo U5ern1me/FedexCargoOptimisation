@@ -9,13 +9,13 @@ class MLPStrategy(Strategy):
     def __init__(self,k_cost,ulds,packages):
         super().__init__(k_cost,ulds,packages)
         self.env = gp.Env(empty=True)
-        self.env.setParam('OutputFlag', 0)    # Suppress Gurobi output
+        # self.env.setParam('OutputFlag', 0)    # Suppress Gurobi output
         self.env.setParam('NumericFocus', 3)  # Enhance numerical focus
         self.env.setParam('Presolve', 2)      # Aggressive presolve
         self.env.start()
         self.model = gp.Model(env=self.env)
-        self.model.setParam("LicenseID", 2584853)
-        self.model.setParam("LogFile", "gurobi.log")
+        # self.model.setParam("LicenseID", 2584853)
+        # self.model.setParam("LogFile", "gurobi.log")
         self.n_packages = len(packages)
         self.n_ulds = len(ulds)
         self.M = 10000
@@ -58,14 +58,14 @@ class MLPStrategy(Strategy):
         for i in range(self.n_packages):
             for k in range(i+1, self.n_packages):
                 # Overlap constraints in x direction
-                self.model.addConstr(self.x[i] + self.bins[i].l * self.lx[i] + self.bins[i].w * self.wx[i] + self.bins[i].h * self.hx[i] - self.x[k] - (1 - self.a[i,k]) * M <= 0, name=f'x_overlap_1_{i}_{k}')
-                self.model.addConstr(self.x[k] + self.bins[k].l * self.lx[k] + self.bins[k].w * self.wx[k] + self.bins[k].h * self.hx[k] - self.x[i] - (1 - self.b[i,k]) * M <= 0, name=f'x_overlap_2_{i}_{k}')
+                self.model.addConstr(self.x[i] + self.packages[i].length * self.lx[i] + self.packages[i].width * self.wx[i] + self.packages[i].height * self.hx[i] - self.x[k] - (1 - self.a[i,k]) * M <= 0, name=f'x_overlap_1_{i}_{k}')
+                self.model.addConstr(self.x[k] + self.packages[k].length * self.lx[k] + self.packages[k].width * self.wx[k] + self.packages[k].height * self.hx[k] - self.x[i] - (1 - self.b[i,k]) * M <= 0, name=f'x_overlap_2_{i}_{k}')
                 # Overlap constraints in y direction
-                self.model.addConstr(self.y[i] + self.bins[i].l * self.ly[i] + self.bins[i].w * self.wy[i] + self.bins[i].h * self.hy[i] - self.y[k] - (1 - self.c[i,k]) * M <= 0, name=f'y_overlap_1_{i}_{k}')
-                self.model.addConstr(self.y[k] + self.bins[k].l * self.ly[k] + self.bins[k].w * self.wy[k] + self.bins[k].h * self.hy[k] - self.y[i] - (1 - self.d[i,k]) * M <= 0, name=f'y_overlap_2_{i}_{k}')
+                self.model.addConstr(self.y[i] + self.packages[i].length * self.ly[i] + self.packages[i].width * self.wy[i] + self.packages[i].height * self.hy[i] - self.y[k] - (1 - self.c[i,k]) * M <= 0, name=f'y_overlap_1_{i}_{k}')
+                self.model.addConstr(self.y[k] + self.packages[k].length * self.ly[k] + self.packages[k].width * self.wy[k] + self.packages[k].height * self.hy[k] - self.y[i] - (1 - self.d[i,k]) * M <= 0, name=f'y_overlap_2_{i}_{k}')
                 # Overlap constraints in z direction
-                self.model.addConstr(self.z[i] + self.bins[i].l * self.lz[i] + self.bins[i].w * self.wz[i] + self.bins[i].h * self.hz[i] - self.z[k] - (1 - self.e[i,k]) * M <= 0, name=f'z_overlap_1_{i}_{k}')
-                self.model.addConstr(self.z[k] + self.bins[k].l * self.lz[k] + self.bins[k].w * self.wz[k] + self.bins[k].h * self.hz[k] - self.z[i] - (1 - self.f[i,k]) * M <= 0, name=f'z_overlap_2_{i}_{k}')
+                self.model.addConstr(self.z[i] + self.packages[i].length * self.lz[i] + self.packages[i].width * self.wz[i] + self.packages[i].height * self.hz[i] - self.z[k] - (1 - self.e[i,k]) * M <= 0, name=f'z_overlap_1_{i}_{k}')
+                self.model.addConstr(self.z[k] + self.packages[k].length * self.lz[k] + self.packages[k].width * self.wz[k] + self.packages[k].height * self.hz[k] - self.z[i] - (1 - self.f[i,k]) * M <= 0, name=f'z_overlap_2_{i}_{k}')
 
                 for j in range(self.n_ulds):
                     self.model.addConstr(self.a[i,k] + self.b[i,k] + self.c[i,k] + self.d[i,k] + self.e[i,k] + self.f[i,k] + 1 - self.s[i,j] - self.s[k,j] >= 0, name=f'overlap_{i}_{j}_{k}')
@@ -74,16 +74,16 @@ class MLPStrategy(Strategy):
             expr = gp.LinExpr()
             for j in range(self.n_ulds):
                 expr += self.s[i,j]
-            if self.bins[i].priority:
+            if self.packages[i].priority:
                 self.model.addConstr(expr == 1, name=f'priority_{i}')
             else:
                 self.model.addConstr(expr <= 1, name=f'economy_{i}')
 
             for j in range(self.n_ulds):
                 # Orientation constraints
-                self.model.addConstr(self.x[i] + self.bins[i].l * self.lx[i] + self.bins[i].w * self.wx[i] + self.bins[i].h * self.hx[i] - self.containers[j].l - (1 - self.s[i,j]) * M <= 0, name=f'orientation_x_{i}_{j}')
-                self.model.addConstr(self.y[i] + self.bins[i].l * self.ly[i] + self.bins[i].w * self.wy[i] + self.bins[i].h * self.hy[i] - self.containers[j].w - (1 - self.s[i,j]) * M <= 0, name=f'orientation_y_{i}_{j}')
-                self.model.addConstr(self.z[i] + self.bins[i].l * self.lz[i] + self.bins[i].w * self.wz[i] + self.bins[i].h * self.hz[i] - self.containers[j].h - (1 - self.s[i,j]) * M <= 0, name=f'orientation_z_{i}_{j}')
+                self.model.addConstr(self.x[i] + self.packages[i].length * self.lx[i] + self.packages[i].width * self.wx[i] + self.packages[i].height * self.hx[i] - self.ulds[j].length - (1 - self.s[i,j]) * M <= 0, name=f'orientation_x_{i}_{j}')
+                self.model.addConstr(self.y[i] + self.packages[i].length * self.ly[i] + self.packages[i].width * self.wy[i] + self.packages[i].height * self.hy[i] - self.ulds[j].width - (1 - self.s[i,j]) * M <= 0, name=f'orientation_y_{i}_{j}')
+                self.model.addConstr(self.z[i] + self.packages[i].length * self.lz[i] + self.packages[i].width * self.wz[i] + self.packages[i].height * self.hz[i] - self.ulds[j].height - (1 - self.s[i,j]) * M <= 0, name=f'orientation_z_{i}_{j}')
 
             # Orientation selection constraints
             self.model.addConstr(self.lx[i] + self.wx[i] + self.hx[i] == 1, name=f'lx_wx_hx_{i}')
@@ -97,12 +97,12 @@ class MLPStrategy(Strategy):
             # Capacity constraints
             expr = gp.LinExpr()
             for i in range(self.n_packages):
-                expr += self.s[i,j] * self.bins[i].weight
-            self.model.addConstr(expr <= self.containers[j].capacity, name=f'capacity_{j}')
+                expr += self.s[i,j] * self.packages[i].weight
+            self.model.addConstr(expr <= self.ulds[j].weight_limit, name=f'capacity_{j}')
 
             expr = gp.LinExpr()
             for i in range(self.n_packages):
-                if self.bins[i].priority:
+                if self.packages[i].priority:
                     expr += self.s[i,j]
             self.model.addConstr(expr <= M * self.Indicator[j], name=f'priority_cost_{j}')
 
@@ -114,11 +114,18 @@ class MLPStrategy(Strategy):
             sum_expr = 1
             for j in range(self.n_ulds):
                 sum_expr -= self.s[i,j]
-            expr += self.bins[i].delay_cost * sum_expr
+            expr += self.packages[i].delay_cost * sum_expr
         self.model.setObjective(expr, GRB.MINIMIZE)
 
     def solve(self):
+        
+        print("Setting variables...")
+        self.set_variables()
+        
+        print("Setting constraints...")
+        self.set_constraints()
 
+        print("Setting objective...")
         try:
             self.model.optimize()
 
