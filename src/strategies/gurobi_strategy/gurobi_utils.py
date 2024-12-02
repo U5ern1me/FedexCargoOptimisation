@@ -25,6 +25,15 @@ class GurobiSolver:
         self.n_ulds = len(ulds)
         self.M = 10000
 
+        # initialize variables
+        self.set_variables()
+
+        # set constraints
+        self.set_constraints()
+
+        # set objective
+        self.set_objective()
+
     def set_variables(self):
         """
         Variables:
