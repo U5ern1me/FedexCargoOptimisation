@@ -72,15 +72,10 @@ class SardineCanSolver(Solver):
         }
 
     def _solve(self):
-        headers = {
-            "Accept": "application/json",
-        }
-
-        request_url = "https://global-api.3dbinpacking.com/packer/packIntoMany"
+        request_url = config["base url"] + "calculations"
 
         packages = [self.get_package_data(package) for package in self.packages]
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
-        params = {"item_coordinates": 1}
 
         request_body = {
             "configuration": {
@@ -97,13 +92,57 @@ class SardineCanSolver(Solver):
             },
         }
 
-        self.response = requests.post(request_url, headers=headers, json=request_body)
+        self.response = requests.post(request_url, json=request_body)
 
     def _get_result(self):
         try:
             if self.response is None:
-                raise Exception("No response from 3D bin packing solver")
+                raise Exception("No response from sardine can solver")
 
-            return self.response.json()
+            res = self.response.json()
+            status_url = config["base url"] + res["statusUrl"]
+            result_url = config["base url"] + res["resultUrl"]
+
+            # polling until the result is ready
+            while True:
+                response = requests.get(status_url)
+                response = response.json()
+                if response["status"] == "DONE":
+                    break
+                time.sleep(config["polling interval"])
+
+            return requests.get(result_url).json()
         except Exception as e:
-            raise Exception(f"Error getting result from 3D bin packing solver: {e}")
+            raise Exception(f"Error getting result from sardine can solver: {e}")
+
+    def _only_check_fits(self, result: Dict[str, Any]) -> bool:
+        num_packages = len(self.packages)
+
+        for _uld in result["containers"]:
+            for _package in _uld["assignments"]:
+                num_packages -= 1
+
+        return num_packages == 0
+
+    def _parse_result(self, result: Dict[str, Any]):
+        for _uld in result["containers"]:
+            for _package in _uld["assignments"]:
+                # get package
+                package_id = _package["piece"]
+                package = self.package_map[package_id]
+
+                # get uld
+                uld_id = _uld["id"]
+                uld = self.uld_map[uld_id]
+
+                # set uld id and coordinates
+                package.uld_id = uld.id
+                x = _package["position"]["x"]
+                y = _package["position"]["y"]
+                z = _package["position"]["z"]
+                package.point1 = (x, y, z)
+                package.point2 = (
+                    x + _package["cubes"][0]["length"],
+                    y + _package["cubes"][0]["width"],
+                    z + _package["cubes"][0]["height"],
+                )

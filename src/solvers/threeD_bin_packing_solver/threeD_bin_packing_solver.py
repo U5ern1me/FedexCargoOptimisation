@@ -70,7 +70,7 @@ class ThreeDBinPackingSolver(Solver):
             "Accept": "application/json",
         }
 
-        request_url = "https://global-api.3dbinpacking.com/packer/packIntoMany"
+        request_url = config["base url"] + "packIntoMany"
 
         packages = [self.get_package_data(package) for package in self.packages]
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
@@ -94,3 +94,31 @@ class ThreeDBinPackingSolver(Solver):
             return self.response.json()
         except Exception as e:
             raise Exception(f"Error getting result from 3D bin packing solver: {e}")
+
+    def _only_check_fits(self, result: Dict[str, Any]) -> bool:
+        num_packages = len(self.packages)
+
+        for _uld in result["bins_packed"]:
+            for _package in _uld["items"]:
+                num_packages -= 1
+
+        return num_packages == 0
+
+    def _parse_result(self, result: Dict[str, Any]):
+        for _uld in result["bins_packed"]:
+            for _package in _uld["items"]:
+                # get package
+                package_id = _package["id"]
+                package = self.package_map[package_id]
+
+                # set uld id and coordinates
+                uld_id = _uld["bin_data"]["id"]
+                package.uld_id = uld_id
+                x = _package["coordinates"]["x1"]
+                y = _package["coordinates"]["y1"]
+                z = _package["coordinates"]["z1"]
+                package.point1 = (x, y, z)
+                x = _package["coordinates"]["x2"]
+                y = _package["coordinates"]["y2"]
+                z = _package["coordinates"]["z2"]
+                package.point2 = (x, y, z)
