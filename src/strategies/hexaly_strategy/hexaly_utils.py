@@ -212,10 +212,6 @@ class HexalySolver:
                     )
                     self.model.constraint(overlapping_condition >= 0)
 
-        # Package assignment --> each package must be assigned to exactly one container
-        for i in range(n_packages):
-            expr_container = self.model.sum(self.model.array(self.s[i]))
-            self.model.constraint(expr_container == 1)
 
             # Container boundary constraints
 
