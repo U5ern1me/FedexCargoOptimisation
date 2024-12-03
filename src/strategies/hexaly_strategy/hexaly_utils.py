@@ -59,11 +59,6 @@ class HexalySolver:
         self.hy = [self.model.bool() for _ in range(n_packages)]
         self.hz = [self.model.bool() for _ in range(n_packages)]
 
-        # Package-to-container assignment variable
-        self.s = [
-            [self.model.bool() for _ in range(n_containers)] for _ in range(n_packages)
-        ]
-
         # Overlap and relative positioning flags
         self.a = [
             [self.model.bool() for _ in range(n_packages)] for _ in range(n_packages)
@@ -176,7 +171,6 @@ class HexalySolver:
                         - self.model.contains(self.container_content[j], k)
                     )
                     self.model.constraint(overlapping_condition >= 0)
-
 
             # Container boundary constraints
 
