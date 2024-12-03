@@ -5,9 +5,11 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from strategies.strategy import Strategy
 from .hexaly_utils import HexalySolver
+import logging
+import hexaly.optimizer
 
 from utils.io import load_config
-import hexaly.optimizer
+
 
 config = load_config(os.path.join(os.path.dirname(__file__), "hexaly.config"))
 
@@ -47,4 +49,5 @@ class HexalyStrategy(Strategy):
                     )
 
             except Exception as e:
-                print(f"Packing failed: {e}")
+                logging.error(f"Packing failed: {e}")
+                raise e

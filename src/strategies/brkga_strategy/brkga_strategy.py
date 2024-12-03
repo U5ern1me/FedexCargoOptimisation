@@ -26,7 +26,7 @@ class BRKGAStrategy(Strategy):
             eliteCProb=config["probability of choosing elite gene"],
             multiProcess=True,
         )
-        model.fit(patient=config["number of stable generations"], verbose=False)
+        model.fit(patient=config["number of stable generations"], verbose=self.debug)
         placement_decoder = model.get_placement()
 
         fitness_score = placement_decoder.evaluate()

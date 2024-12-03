@@ -6,6 +6,7 @@ import torch.nn as nn
 import gymnasium as gym
 from gymnasium import spaces
 from stable_baselines3 import A2C, PPO
+import logging
 
 # typing
 from typing import List, Any, Tuple, Dict
@@ -784,7 +785,7 @@ class DRL_Model(nn.Module):
         """
         try:
             ## Print the starting message
-            print("Starting DRL\n")
+            logging.info("Starting DRL\n")
 
             ## Initialize the ULD and packages
             ULD_DRL_ = ULD_DRL(ULD_data)
@@ -831,6 +832,7 @@ class DRL_Model(nn.Module):
             env.close()
 
             ## Print the ending message
-            print("Ending DRL\n")
+            logging.info("Ending DRL\n")
         except Exception as e:
+            logging.error(f"DRL Error: {e}")
             raise e

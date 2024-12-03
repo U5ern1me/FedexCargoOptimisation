@@ -5,7 +5,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from abc import ABC, abstractmethod
 import time
-import asyncio
 
 # typing
 from typing import Dict, Any, Optional, List, Tuple
@@ -43,6 +42,9 @@ class Strategy(ABC):
 
         self.solution_found = False
         self.time_start = time.time()
+
+        # to check logging
+        self.debug = int(os.environ["DEBUG"])
 
     async def get_allocation(
         self,

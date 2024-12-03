@@ -4,6 +4,7 @@ import random
 import time
 import multiprocessing
 import numpy as np
+import logging
 
 # typing
 from typing import List, Tuple, Dict, Any, Optional
@@ -27,7 +28,7 @@ class Bin:
         self.has_priority = False
 
         if verbose:
-            print("Init EMSs:", self.EMSs)
+            logging.info("Init EMSs:", self.EMSs)
 
     def __getitem__(self, index: int) -> List[np.ndarray]:
         return self.EMSs[index]
@@ -62,13 +63,13 @@ class Bin:
         ):  # Ensure min_dim is not None
             isValid = False
             if verbose:
-                print("Box is invalid due to dimensions:", new_box)
+                logging.info("Box is invalid due to dimensions:", new_box)
 
         # 5. Do not add new EMS having smaller dimension of the smallest dimension of remaining boxes
         if np.prod(new_box) < min_vol:  # Change from np.product to np.prod
             isValid = False
             if verbose:
-                print("Box is invalid due to volume:", new_box)
+                logging.info("Box is invalid due to volume:", new_box)
 
         # Other update logic...
 
@@ -85,7 +86,7 @@ class Bin:
             self.has_priority = True
 
         if verbose:
-            print("------------\n*Place Box*:\nEMS:", list(map(tuple, ems)))
+            logging.info("*Place Box*: EMS:", list(map(tuple, ems)))
 
         # 2. Generate new EMSs resulting from the intersection of the box
         for EMS in self.EMSs.copy():
@@ -95,11 +96,8 @@ class Bin:
                 self.eliminate(EMS)
 
                 if verbose:
-                    print(
-                        "\n*Elimination*:\nRemove overlapped EMS:",
-                        list(map(tuple, EMS)),
-                        "\nEMSs left:",
-                        list(map(lambda x: list(map(tuple, x)), self.EMSs)),
+                    logging.info(
+                        f"*Elimination*:\nRemove overlapped EMS: {list(map(tuple, EMS))}\nEMSs left: {list(map(lambda x: list(map(tuple, x)), self.EMSs))}"
                     )
 
                 # six new EMSs in 3 dimensionsc
@@ -118,16 +116,15 @@ class Bin:
                     isValid = True
 
                     if verbose:
-                        print("\n*New*\nEMS:", list(map(tuple, new_EMS)))
+                        logging.info(f"*New* EMS: {list(map(tuple, new_EMS))}")
 
                     # 3. Eliminate new EMSs which are totally inscribed by other EMSs
                     for other_EMS in self.EMSs:
                         if self.inscribed(new_EMS, other_EMS):
                             isValid = False
                             if verbose:
-                                print(
-                                    "-> Totally inscribed by:",
-                                    list(map(tuple, other_EMS)),
+                                logging.info(
+                                    f"-> Totally inscribed by: {list(map(tuple, other_EMS))}"
                                 )
 
                     # 4. Do not add new EMS smaller than the volume of remaining boxes
@@ -136,22 +133,25 @@ class Bin:
                     ):  # Change from np.min(new_box) < min_dim to np.any(new_box < min_dim)
                         isValid = False
                         if verbose:
-                            print("Box is invalid due to dimensions:", new_box)
+                            logging.info(f"Box is invalid due to dimensions: {new_box}")
 
                     # 5. Do not add new EMS having smaller dimension of the smallest dimension of remaining boxes
                     if np.prod(new_box) < min_vol:  # Change from np.product to np.prod
                         isValid = False
                         if verbose:
-                            print("Box is invalid due to volume:", new_box)
+                            logging.info(f"Box is invalid due to volume: {new_box}")
 
                     if isValid:
                         self.EMSs.append(new_EMS)
                         if verbose:
-                            print("-> Success\nAdd new EMS:", list(map(tuple, new_EMS)))
+                            logging.info(
+                                f"-> Success\nAdd new EMS: {list(map(tuple, new_EMS))}"
+                            )
 
         if verbose:
-            print("\nEnd:")
-            print("EMSs:", list(map(lambda x: list(map(tuple, x)), self.EMSs)))
+            logging.info(
+                f"End:\nEMSs: {list(map(lambda x: list(map(tuple, x)), self.EMSs))}"
+            )
 
     def overlapped(self, ems: np.ndarray, EMS: np.ndarray) -> bool:
         """
@@ -251,14 +251,17 @@ class PlacementProcedure:
 
         self.verbose = verbose
         if self.verbose:
-            print("------------------------------------------------------------------")
-            print("|   Placement Procedure")
-            print("|    -> Bins:", self.Bins)
-            print("|    -> Bin Order:", self.BinOrder)
-            print("|    -> Boxes:", self.boxes)
-            print("|    -> Box Packing Sequence:", self.BPS)
-            print("|    -> Vector of Box Orientations:", self.VBO)
-            print("-------------------------------------------------------------------")
+            logging.info(
+                f"""------------------------------------------------------------------
+                |   Placement Procedure
+                |    -> Bins: {self.Bins}
+                |    -> Bin Order: {self.BinOrder}
+                |    -> Boxes: {self.boxes}
+                |    -> Box Packing Sequence: {self.BPS}
+                |    -> Vector of Box Orientations: {self.VBO}
+                ------------------------------------------------------------------
+                """
+            )
 
         self.placement()
 
@@ -271,7 +274,7 @@ class PlacementProcedure:
         # Box Selection
         for i, box in enumerate(items_sorted):
             if self.verbose:
-                print("Select Box:", box)
+                logging.info(f"Select Box: {box}")
 
             # Bin and EMS selection
             selected_bin = None
@@ -308,15 +311,15 @@ class PlacementProcedure:
                 if self.num_opend_bins > bin_length:
 
                     if self.verbose:
-                        print(f"No more bin to open. [Cannot fit box {box.id}]")
+                        logging.info(f"No more bin to open. [Cannot fit box {box.id}]")
                     return
 
                 selected_EMS = self.Bins[selected_bin].EMSs[0]  # origin of the new bin
                 if self.verbose:
-                    print("No available bin... open bin", selected_bin)
+                    logging.info(f"No available bin... open bin {selected_bin}")
 
             if self.verbose:
-                print("Select EMS:", list(map(tuple, selected_EMS)))
+                logging.info(f"Select EMS: {list(map(tuple, selected_EMS))}")
 
             # Box orientation selection
             BO = self.selecte_box_orientaion(self.VBO[i], box, selected_EMS)
@@ -330,14 +333,12 @@ class PlacementProcedure:
             )
 
             if self.verbose:
-                print("Add box to Bin", selected_bin)
-                print(" -> EMSs:", self.Bins[selected_bin].get_EMSs())
-                print("------------------------------------------------------------")
+                logging.info(
+                    f"""Add box to Bin {selected_bin}
+                    -> EMSs: {self.Bins[selected_bin].get_EMSs()}"""
+                )
         if self.verbose:
-            print("|")
-            print("|     Number of used bins:", self.num_opend_bins)
-            print("|")
-            print("------------------------------------------------------------")
+            logging.info(f"Number of used bins: {self.num_opend_bins}")
 
     def DFTRC_2(self, box: Package, k: int) -> np.ndarray:
         """
@@ -413,7 +414,7 @@ class PlacementProcedure:
         selectedBO = BOs[math.ceil(VBO * len(BOs)) - 1]
 
         if self.verbose:
-            print("Select VBO:", selectedBO, "  (BOs", BOs, ", vector", VBO, ")")
+            logging.info(f"Select VBO: {selectedBO}  (BOs {BOs}, vector {VBO})")
         return selectedBO
 
     def fitin(self, box: Tuple[int, int, int], EMS: np.ndarray) -> bool:
@@ -737,9 +738,11 @@ class BRKGA:
             raise ValueError("No feasible solution found")
 
         if verbose:
-            print("\nInitial Population:")
-            print("  ->  shape:", population.shape)
-            print("  ->  Best Fitness:", max(fitness_list))
+            logging.info(
+                f"""\nInitial Population:
+                ->  shape: {population.shape}
+                ->  Best Fitness: {max(fitness_list)}"""
+            )
 
         # best
         best_fitness = np.min(fitness_list)
@@ -757,7 +760,7 @@ class BRKGA:
                 self.best_fitness = best_fitness
                 self.solution = best_solution
                 if verbose:
-                    print("Early stop at iter", g, "(timeout)")
+                    logging.info(f"Early stop at iter {g} (timeout)")
                 return
 
             # Select elite group
@@ -796,7 +799,7 @@ class BRKGA:
             self.history["mean"].append(np.mean(fitness_list))
 
             if verbose:
-                print("Generation :", g, " \t(Best Fitness:", best_fitness, ")")
+                logging.info(f"Generation : {g} \t(Best Fitness: {best_fitness})")
 
         self.best_fitness = best_fitness
         self.solution = best_solution
