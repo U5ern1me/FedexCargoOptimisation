@@ -25,9 +25,13 @@ async def main():
         default=config["default strategy"],
         help=f"The strategy to use. Has values: {config['strategies']}",
     )
+    parser.add_argument(
+        "--debug",
+        "-d",
+        action="store_true",
+        help="Print debug information",
+    )
     args = parser.parse_args()
-
-    SelectedStrategy = strategies[args.strategy]
 
     # Create output folder if it doesn't exist
     if not os.path.exists(config["output path"]):
@@ -35,14 +39,22 @@ async def main():
 
     run_name = f"{args.strategy}-{datetime.now().strftime('%Y-%m-%d_%H-%M')}"
     output_path = os.path.join(config["output path"], run_name)
-    log_path = os.path.join(config["log path"], run_name)
+    log_path = os.path.join(config["log path"], f"{run_name}.log")
 
-    # add logging
+    # if debug is true, set environment variable DEBUG to true
+    if args.debug:
+        print(f"Output logged in {output_path}")
+        os.environ["DEBUG"] = "1"
+    else:
+        os.environ["DEBUG"] = "0"
+
     logging.basicConfig(
         level=logging.INFO,
         filename=log_path,
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
+
+    SelectedStrategy = strategies[args.strategy]
 
     # Parse input data
     ulds = read_ulds(config["data path"])
@@ -50,9 +62,7 @@ async def main():
     k = read_k(config["data path"])
 
     # Run strategy
-    strategy = SelectedStrategy(
-        ulds=ulds, packages=packages, k_cost=k, log_path=log_path
-    )
+    strategy = SelectedStrategy(ulds=ulds, packages=packages, k_cost=k)
     try:
         await strategy.run()
     except Exception as e:
@@ -85,6 +95,11 @@ async def main():
     print(
         f"Output saved to {output_path}, time taken: {(strategy.time_end - strategy.time_start):.2f} seconds"
     )
+
+    # if log file is empty and debug is false, delete logfile
+    if not args.debug and os.path.exists(log_path):
+        if os.path.getsize(log_path) == 0:
+            os.remove(log_path)
 
 
 if __name__ == "__main__":

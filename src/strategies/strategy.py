@@ -43,6 +43,9 @@ class Strategy(ABC):
         self.solution_found = False
         self.time_start = time.time()
 
+        # to check logging
+        self.debug = int(os.environ["DEBUG"])
+
     async def get_allocation(
         self,
     ) -> List[Tuple[str, Optional[str], Tuple[int, int, int], Tuple[int, int, int]]]:
