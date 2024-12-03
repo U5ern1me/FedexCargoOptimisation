@@ -12,6 +12,11 @@ from typing import Dict, Any, Optional, List, Tuple
 from models.package import Package
 from models.uld import ULD
 
+# typing
+from typing import Dict, Any, Optional, List, Tuple
+from models.package import Package
+from models.uld import ULD
+
 
 class Strategy(ABC):
     """
