@@ -1,9 +1,27 @@
 import copy
 from models.uld import ULD
 
+# typing
+from typing import List, Any
+from models.package import Package
+from hexaly.optimizer import HxModel
+
 
 class HexalySolver:
-    def __init__(self, Package_data, container_data, k, model):
+    def __init__(
+        self,
+        Package_data: List[Package],
+        container_data: List[ULD],
+        k: float,
+        model: HxModel,
+    ):
+        """
+        Args:
+            Package_data: List of packages
+            container_data: List of ULDs
+            k: Cost of priority ULDs
+            model: Hexaly model
+        """
         self.Package_data = copy.deepcopy(Package_data)
         self.container_data = copy.deepcopy(container_data)
         self.K = k
@@ -32,6 +50,14 @@ class HexalySolver:
         self.set_objective()
 
     def set_variables(self):
+        """
+        Variables:
+        x, y, z: 1D array denoting the bottom left front corner of the package
+        lx, ly, lz: 1D array denoting the orientation of the package
+        wx, wy, wz: 1D array denoting the orientation of the package
+        hx, hy, hz: 1D array denoting the orientation of the package
+        container_content: 1D array of sets denoting the content of the container
+        """
         n_packages = len(self.Package_data)
         n_containers = len(self.container_data)
 
@@ -89,6 +115,15 @@ class HexalySolver:
         self.used_h = [self.model.int(0, 100000) for _ in range(n_packages)]
 
     def set_constraints(self):
+        """
+        Constraints:
+        - Unique package assignment constraint
+        - Overlap and positioning constraints
+        - Package assignment constraints
+        - Container boundary constraints
+        - Orientation selection constraints
+        - Weight constraints
+        """
         n_packages = len(self.Package_data)
         n_containers = len(self.container_data)
 
@@ -273,6 +308,11 @@ class HexalySolver:
             )
 
     def set_objective(self):
+        """
+        Objective:
+        - Minimize the cost of the packages in the last container (buffer container)
+        - Minimize the spread of priority packages
+        """
         lost_cost = self.model.array(
             [package.delay_cost for package in self.Package_data]
         )

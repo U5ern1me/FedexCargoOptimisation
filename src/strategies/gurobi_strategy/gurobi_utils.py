@@ -1,9 +1,27 @@
 import gurobipy as gp
 from gurobipy import GRB
 
+# typing
+from typing import List, Any, Dict
+from models.package import Package
+from models.uld import ULD
+
 
 class GurobiSolver:
-    def __init__(self, packages, ulds, k_cost, config):
+    def __init__(
+        self,
+        packages: List[Package],
+        ulds: List[ULD],
+        k_cost: float,
+        config: Dict[str, Any],
+    ):
+        """
+        Args:
+            packages: List of packages
+            ulds: List of ULDs
+            k_cost: Cost of priority ULDs
+            config: Configuration for Gurobi
+        """
         self.packages = packages
         self.ulds = ulds
         self.k_cost = k_cost

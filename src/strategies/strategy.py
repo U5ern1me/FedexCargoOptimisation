@@ -7,6 +7,11 @@ from abc import ABC, abstractmethod
 import time
 import asyncio
 
+# typing
+from typing import Dict, Any, Optional, List, Tuple
+from models.package import Package
+from models.uld import ULD
+
 
 class Strategy(ABC):
     """
@@ -17,10 +22,16 @@ class Strategy(ABC):
 
     def __init__(
         self,
-        k_cost=None,
-        ulds=None,
-        packages=None,
+        k_cost: Optional[float] = 0,
+        ulds: List[ULD] = [],
+        packages: List[Package] = [],
     ):
+        """
+        Args:
+            k_cost: Cost of priority ULDs
+            ulds: List of ULDs
+            packages: List of packages
+        """
         self.k_cost = k_cost
         self.ulds = ulds
         self.packages = packages
@@ -28,9 +39,14 @@ class Strategy(ABC):
         self.solution_found = False
         self.time_start = time.time()
 
-    async def get_allocation(self):
+    async def get_allocation(
+        self,
+    ) -> List[Tuple[str, Optional[str], Tuple[int, int, int], Tuple[int, int, int]]]:
         """
         Get the allocation of the packages to the ULDs.
+
+        Returns:
+            List of tuples containing the package ID, ULD ID, and the start and end points of the package
         """
         allocation = []
         for package in self.packages:
@@ -40,9 +56,12 @@ class Strategy(ABC):
 
         return allocation
 
-    def get_num_packed(self):
+    def get_num_packed(self) -> int:
         """
         Get the number of packages that are packed.
+
+        Returns:
+            Number of packed packages
         """
         num_packed = 0
         for package in self.packages:
@@ -50,9 +69,12 @@ class Strategy(ABC):
                 num_packed += 1
         return num_packed
 
-    def get_num_priority_uld(self):
+    def get_num_priority_uld(self) -> int:
         """
         Get the number of ULDs that have priority packages.
+
+        Returns:
+            Number of priority ULDs
         """
         priority_ulds = set()
 
@@ -61,9 +83,12 @@ class Strategy(ABC):
                 priority_ulds.add(package.uld_id)
         return len(priority_ulds)
 
-    def calculate_cost(self):
+    def calculate_cost(self) -> float:
         """
         Calculate the total cost of the solution.
+
+        Returns:
+            Total cost of the solution
         """
         total_cost = 0
 
@@ -74,9 +99,17 @@ class Strategy(ABC):
 
         return total_cost
 
-    async def get_outputs(self):
+    async def get_outputs(self) -> Tuple[
+        List[Tuple[str, Optional[str], Tuple[int, int, int], Tuple[int, int, int]]],
+        float,
+        int,
+        int,
+    ]:
         """
         Get the allocation, total cost, number of packed packages, and number of priority ULDs.
+
+        Returns:
+            Allocation, total cost, number of packed packages, and number of priority ULDs
         """
         total_cost = self.calculate_cost()
         allocation = await self.get_allocation()
@@ -109,7 +142,7 @@ class Strategy(ABC):
         self.time_end = time.time()
         self.solution_found = True
 
-    async def validate(self):
+    async def validate(self) -> bool:
         """
         Validate the solution. If invalid, set the error message and return False.
         """
@@ -177,9 +210,12 @@ class Strategy(ABC):
 
         return True
 
-    async def get_solution_json(self):
+    async def get_solution_json(self) -> Dict[str, Any]:
         """
         Get the solution in the json format for the API.
+
+        Returns:
+            Solution in the json format
         """
         allocation = []
         uld_package_map = {}

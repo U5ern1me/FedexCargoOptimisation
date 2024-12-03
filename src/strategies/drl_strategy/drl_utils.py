@@ -7,13 +7,33 @@ import gymnasium as gym
 from gymnasium import spaces
 from stable_baselines3 import A2C, PPO
 
+# typing
+from typing import List, Any, Tuple, Dict
+
 
 class Package:
     """
     Package overwrite for the DRL solver
     """
 
-    def __init__(self, id, length, width, height, weight, Priority, delay_cost):
+    def __init__(
+        self,
+        id: str,
+        length: int,
+        width: int,
+        height: int,
+        weight: int,
+        Priority: str,
+        delay_cost: int,
+    ):
+        """
+        Args:
+            id: Package ID
+            length: Package length
+            width: Package width
+            height: Package height
+            weight: Package weight
+        """
         self.id = id
         self.length = length
         self.width = width
@@ -31,17 +51,28 @@ class Package:
         self.current_postion = None
         self.orientation = None
 
-    def update_ULD(self, uld_id, current_position, orientaion):
+    def update_ULD(self, uld_id: str, current_position: List[int], orientaion: int):
         """
         Update the ULD of the package
+
+        Args:
+            uld_id: ULD ID
+            current_position: Current position of the package
+            orientaion: Orientation of the package
         """
         self.current_ULD = uld_id
         self.current_postion = current_position
         self.orientation = orientaion
 
-    def orient(self, orientation):
+    def orient(self, orientation: int) -> Tuple[int, int, int]:
         """
         return the orientated package dimensions based on the orientation
+
+        Args:
+            orientation: Orientation of the package
+
+        Returns:
+            Length, width, and height of the orientated package
         """
         length = self.length
         width = self.width
@@ -74,7 +105,11 @@ class Package_DRL:
     Package list for the DRL solver
     """
 
-    def __init__(self, packages):
+    def __init__(self, packages: List[Package]):
+        """
+        Args:
+            packages: List of packages
+        """
         self.package_ids = []
         self.priority_count = 0
         self.packages = []
@@ -107,7 +142,17 @@ class ULD:
     ULD overwrite for the DRL solver
     """
 
-    def __init__(self, id, length, width, height, max_weight_limit):
+    def __init__(
+        self, id: str, length: int, width: int, height: int, max_weight_limit: int
+    ):
+        """
+        Args:
+            id: ULD ID
+            length: ULD length
+            width: ULD width
+            height: ULD height
+            max_weight_limit: Maximum weight limit of the ULD
+        """
         self.id = id
         self.length = length
         self.width = width
@@ -118,9 +163,13 @@ class ULD:
         self.remaining_volume = self.max_volume
         self.package_assignments = []
 
-    def update_package_assignment(self, package_: Package, orientation):
+    def update_package_assignment(self, package_: Package, orientation: int) -> None:
         """
         Update the package assignment of the ULD
+
+        Args:
+            package_: Package
+            orientation: Orientation of the package
         """
         length, width, height = package_.orient(orientation)
         self.package_assignments.append(
@@ -152,7 +201,11 @@ class ULD_DRL:
     ULD list for the DRL solver
     """
 
-    def __init__(self, ulds: list):
+    def __init__(self, ulds: List[ULD]):
+        """
+        Args:
+            ulds: List of ULDs
+        """
         self.ulds = []
         for uld in ulds:
             self.ulds.append(
@@ -178,9 +231,16 @@ class Bin_Packing_Env(gym.Env):
         self,
         ulds_: ULD_DRL,
         packages_: Package_DRL,
-        ulds_solver: list,
-        packages_solver: list,
+        ulds_solver: List[ULD],
+        packages_solver: List[Package],
     ):
+        """
+        Args:
+            ulds_: ULD_DRL
+            packages_: Package_DRL
+            ulds_solver: List of ULDs
+            packages_solver: List of Packages
+        """
         super(Bin_Packing_Env, self).__init__()
         self.seed_value = None
         self.step_count = 0
@@ -241,9 +301,15 @@ class Bin_Packing_Env(gym.Env):
             dtype=np.float32,
         )
 
-    def mask_action(self, action):
+    def mask_action(self, action: np.ndarray) -> Tuple[bool, Dict[str, Any]]:
         """
         Mask the action based on the termination and info
+
+        Args:
+            action: Action
+
+        Returns:
+            Termination (bool), info (Dict[str, Any])
         """
         termination = False
         info = {}
@@ -328,9 +394,19 @@ class Bin_Packing_Env(gym.Env):
                     return termination, info
         return termination, info
 
-    def calculate_reward(self, termination, action, reason):
+    def calculate_reward(
+        self, termination: bool, action: np.ndarray, reason: str
+    ) -> float:
         """
         Calculate the reward for the DRL solver
+
+        Args:
+            termination: Termination (bool)
+            action: Action (np.ndarray)
+            reason: Reason (str)
+
+        Returns:
+            Reward
         """
         reward = 0
 
@@ -389,9 +465,17 @@ class Bin_Packing_Env(gym.Env):
 
         return reward
 
-    def step(self, action):
+    def step(
+        self, action: np.ndarray
+    ) -> Tuple[np.ndarray, float, bool, bool, Dict[str, Any]]:
         """
         Takes an action and updates the environment.
+
+        Args:
+            action: Action (np.ndarray)
+
+        Returns:
+            Observation (np.ndarray), Reward (float), Terminated (bool), Truncated (bool), Info (Dict[str, Any])
         """
         ## DENORMALIZING THE ACTION
         action[0] = abs(action[0]) * (len(self.uld_data.ulds) - 1)
@@ -452,9 +536,12 @@ class Bin_Packing_Env(gym.Env):
 
         return self.observation, self.reward, self.terminated, self.truncated, self.info
 
-    def update_environment(self, action):
+    def update_environment(self, action: np.ndarray):
         """
         Update the environment based on the action
+
+        Args:
+            action: Action (np.ndarray)
         """
         ## Update the package ULD
         self.packages_.packages[action[1]].update_ULD(
@@ -518,9 +605,12 @@ class Bin_Packing_Env(gym.Env):
             for j in range(action[4], action[4] + package_width):
                 height_map[i][j] = height_to_set
 
-    def get_observation(self):
+    def get_observation(self) -> np.ndarray:
         """
         Get the observation for the DRL solver
+
+        Returns:
+            Observation (np.ndarray)
         """
         ## Initialize the observation
         self.observation = []
@@ -566,9 +656,12 @@ class Bin_Packing_Env(gym.Env):
         if self.seed_value == None:
             self.seed_value = np.random.seed(self.seed_value)
 
-    def reset(self, seed=None):
+    def reset(self, seed=None) -> Tuple[np.ndarray, Dict[str, Any]]:
         """
         Reset the environment for the DRL solver
+
+        Returns:
+            Observation (np.ndarray), Info (Dict[str, Any])
         """
         ## Initialize the terminated and info
         self.terminated = False
@@ -612,9 +705,15 @@ class Bin_Packing_Env(gym.Env):
         del self.priority_placed
 
 
-def Height_map(ulds_: ULD_DRL) -> list:
+def Height_map(ulds_: ULD_DRL) -> List[torch.Tensor]:
     """
     Create the height map for the DRL solver
+
+    Args:
+        ulds_: ULD_DRL
+
+    Returns:
+        Height map (List[torch.Tensor])
     """
     tensor_list = []
     for uld in ulds_.ulds:
@@ -622,9 +721,15 @@ def Height_map(ulds_: ULD_DRL) -> list:
     return tensor_list
 
 
-def calculate_max_dim(ulds_: list):
+def calculate_max_dim(ulds_: List[ULD]) -> Tuple[int, int, int, int]:
     """
     Calculate the maximum dimensions for the DRL solver
+
+    Args:
+        ulds_: List of ULDs
+
+    Returns:
+        Length, width, height, and max weight limit
     """
     length = 0
     width = 0
@@ -642,9 +747,16 @@ def calculate_max_dim(ulds_: list):
     return length, width, height, max_weight_limit
 
 
-def normalize_list(list, max_value):
+def normalize_list(list: List[float], max_value: float) -> List[float]:
     """
     Normalize the list for the DRL solver
+
+    Args:
+        list: List of values
+        max_value: Maximum value
+
+    Returns:
+        Normalized list
     """
     return [x / max_value for x in list]
 
@@ -653,9 +765,22 @@ class DRL_Model(nn.Module):
     def __init__(self):
         super(DRL_Model, self).__init__()
 
-    def train(self, ULD_data: list, Package_data: list, model_params: dict) -> str:
+    def train(
+        self,
+        ULD_data: List[ULD],
+        Package_data: List[Package],
+        model_params: Dict[str, Any],
+    ) -> str:
         """
         Solve using DRL model
+
+        Args:
+            ULD_data: List of ULDs
+            Package_data: List of Packages
+            model_params: Model parameters
+
+        Returns:
+            Message
         """
         try:
             ## Print the starting message

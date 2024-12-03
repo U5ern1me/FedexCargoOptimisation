@@ -5,12 +5,21 @@ import json
 from models.package import Package
 from models.uld import ULD
 
+# typing
+from typing import Dict, Any, Optional, List, Tuple
+
 COST_MAX = 1000000
 
 
-def read_packages(file_path):
+def read_packages(file_path: str) -> List[Package]:
     """
     Reads package details from a CSV file.
+
+    Args:
+        file_path: Path to the folder containing the input data
+
+    Returns:
+        List of packages
     """
     df = pd.read_csv(os.path.join(file_path, "package.csv"))
     packages = []
@@ -34,9 +43,15 @@ def read_packages(file_path):
     return packages
 
 
-def read_ulds(file_path):
+def read_ulds(file_path: str) -> List[ULD]:
     """
     Reads ULD details from a CSV file.
+
+    Args:
+        file_path: Path to the folder containing the input data
+
+    Returns:
+        List of ULDs
     """
     df = pd.read_csv(os.path.join(file_path, "uld.csv"))
     ulds = []
@@ -53,10 +68,27 @@ def read_ulds(file_path):
     return ulds
 
 
-def write_output(allocation, total_cost, num_packed, num_priority_uld, file_path):
+def write_output(
+    allocation: List[
+        Tuple[
+            str, Optional[str], Tuple[float, float, float], Tuple[float, float, float]
+        ]
+    ],
+    total_cost: float,
+    num_packed: int,
+    num_priority_uld: int,
+    file_path: str,
+):
     """
     Write the output to a text file in format specified in problem statement.
     Additionally, creates a csv file with the allocation of the packages to the ULDs.
+
+    Args:
+        allocation: Allocation of the packages to the ULDs
+        total_cost: Total cost of the solution
+        num_packed: Number of packed packages
+        num_priority_uld: Number of priority ULDs
+        file_path: Path to the folder to save the output
     """
     rows = []
     with open(os.path.join(file_path, "output.txt"), "w") as f:
@@ -86,9 +118,15 @@ def write_output(allocation, total_cost, num_packed, num_priority_uld, file_path
     allocation_df.to_csv(os.path.join(file_path, "allocation.csv"), index=False)
 
 
-def read_k(file_path):
+def read_k(file_path: str) -> int:
     """
     Read k value from a text file.
+
+    Args:
+        file_path: Path to the folder containing the input data
+
+    Returns:
+        k
     """
     with open(os.path.join(file_path, "k.txt"), "r") as f:
         try:
@@ -98,9 +136,15 @@ def read_k(file_path):
     return k
 
 
-def read_allocation(file_path):
+def read_allocation(file_path: str) -> Dict[str, Dict[str, Any]]:
     """
     Read allocation data from a csv file.
+
+    Args:
+        file_path: Path to the folder containing the input data
+
+    Returns:
+        Allocation dictionary
     """
     df = pd.read_csv(os.path.join(file_path, "allocation.csv"))
 
@@ -124,9 +168,15 @@ def read_allocation(file_path):
     return allocation_dict
 
 
-def load_config(config_path):
+def load_config(config_path: str) -> Dict[str, Any]:
     """
     Load the configuration from a json file.
+
+    Args:
+        config_path: Path to the configuration file
+
+    Returns:
+        Configuration
     """
     with open(config_path, "r") as f:
         config = json.load(f)
