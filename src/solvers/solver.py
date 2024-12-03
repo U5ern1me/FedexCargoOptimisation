@@ -18,34 +18,34 @@ class Solver(ABC):
         self.only_check_fits = False
 
     @abstractmethod
-    def _solve(self):
+    async def _solve(self):
         """
         Solve the problem
         """
         pass
 
     @abstractmethod
-    def _get_result(self):
+    async def _get_result(self):
         """
         Get the result of the solving process
         """
         pass
 
     @abstractmethod
-    def _parse_result(self, result: Dict[str, Any]):
+    async def _parse_result(self, result: Dict[str, Any]):
         """
         Parse the result of the solving process
         """
         pass
 
     @abstractmethod
-    def _only_check_fits(self, result: Dict[str, Any]) -> bool:
+    async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         """
         Check if the packages fit in the ULDs
         """
         pass
 
-    def solve(self, only_check_fits: bool = False):
+    async def solve(self, only_check_fits: bool = False):
         """
         Start the solving process
 
@@ -55,7 +55,7 @@ class Solver(ABC):
 
         self.only_check_fits = only_check_fits
 
-        self._solve()
+        await self._solve()
 
     def check_all_fit(self) -> bool:
         """
@@ -67,17 +67,17 @@ class Solver(ABC):
 
         return True
 
-    def get_fit(self) -> bool:
+    async def get_fit(self) -> bool:
         """
         Get the result of the solving process
         """
 
-        result = self._get_result()
+        result = await self._get_result()
 
         if self.only_check_fits:
-            valid = self._only_check_fits(result)
+            valid = await self._only_check_fits(result)
         else:
-            self._parse_result(result)
+            await self._parse_result(result)
             valid = self.check_all_fit()
 
         return valid

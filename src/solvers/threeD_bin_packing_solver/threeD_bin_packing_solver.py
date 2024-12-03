@@ -65,7 +65,7 @@ class ThreeDBinPackingSolver(Solver):
             "q": 1,
         }
 
-    def _solve(self):
+    async def _solve(self):
         headers = {
             "Accept": "application/json",
         }
@@ -86,7 +86,7 @@ class ThreeDBinPackingSolver(Solver):
 
         self.response = requests.post(request_url, headers=headers, json=request_body)
 
-    def _get_result(self):
+    async def _get_result(self):
         try:
             if self.response is None:
                 raise Exception("No response from 3D bin packing solver")
@@ -95,7 +95,7 @@ class ThreeDBinPackingSolver(Solver):
         except Exception as e:
             raise Exception(f"Error getting result from 3D bin packing solver: {e}")
 
-    def _only_check_fits(self, result: Dict[str, Any]) -> bool:
+    async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
 
         for _uld in result["bins_packed"]:
@@ -104,7 +104,7 @@ class ThreeDBinPackingSolver(Solver):
 
         return num_packages == 0
 
-    def _parse_result(self, result: Dict[str, Any]):
+    async def _parse_result(self, result: Dict[str, Any]):
         for _uld in result["bins_packed"]:
             for _package in _uld["items"]:
                 # get package

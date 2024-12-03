@@ -71,7 +71,7 @@ class SardineCanSolver(Solver):
             "maxWeight": uld.weight_limit,
         }
 
-    def _solve(self):
+    async def _solve(self):
         request_url = config["base url"] + "calculations"
 
         packages = [self.get_package_data(package) for package in self.packages]
@@ -94,7 +94,7 @@ class SardineCanSolver(Solver):
 
         self.response = requests.post(request_url, json=request_body)
 
-    def _get_result(self):
+    async def _get_result(self):
         try:
             if self.response is None:
                 raise Exception("No response from sardine can solver")
@@ -115,7 +115,7 @@ class SardineCanSolver(Solver):
         except Exception as e:
             raise Exception(f"Error getting result from sardine can solver: {e}")
 
-    def _only_check_fits(self, result: Dict[str, Any]) -> bool:
+    async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
 
         for _uld in result["containers"]:
@@ -124,7 +124,7 @@ class SardineCanSolver(Solver):
 
         return num_packages == 0
 
-    def _parse_result(self, result: Dict[str, Any]):
+    async def _parse_result(self, result: Dict[str, Any]):
         for _uld in result["containers"]:
             for _package in _uld["assignments"]:
                 # get package
