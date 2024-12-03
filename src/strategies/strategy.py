@@ -5,7 +5,6 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from abc import ABC, abstractmethod
 import time
-import asyncio
 
 # typing
 from typing import Dict, Any, Optional, List, Tuple

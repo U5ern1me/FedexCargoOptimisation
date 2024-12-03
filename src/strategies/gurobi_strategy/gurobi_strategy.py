@@ -6,6 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from gurobipy import GRB, GurobiError
 from strategies.strategy import Strategy
 from .gurobi_utils import GurobiSolver
+import logging
 
 from utils.io import load_config
 
@@ -22,27 +23,27 @@ class GurobiStrategy(Strategy):
 
             # Check if the model is infeasible
             if solver.model.Status == GRB.INFEASIBLE:
-                print("Model is infeasible. Computing IIS...")
+                logging.error("Model is infeasible. Computing IIS...")
                 solver.model.computeIIS()
                 solver.model.write(config["IIS file"])
 
                 # Output IIS constraints
-                print("Constraints in IIS:")
+                logging.info("Constraints in IIS:")
                 for c in solver.model.getConstrs():
                     if c.IISConstr:
-                        print(c.ConstrName)
+                        logging.info(c.ConstrName)
 
                 # Exit or handle accordingly
                 raise Exception(
                     f"Model is infeasible. IIS computed and written to {config['IIS file']}."
                 )
         except GurobiError as e:
-            print(f"Gurobi Error code = {e.errno}")
-            print(e.message)
-            exit(1)
+            logging.error(f"Gurobi Error code = {e.errno}")
+            logging.error(e.message)
+            raise e
         except Exception as e:
-            print(f"Exception: {str(e)}")
-            exit(1)
+            logging.error(f"Exception: {str(e)}")
+            raise e
 
         for i in range(self.n_packages):
             # Check if package i is assigned to any ULD
