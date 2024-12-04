@@ -1,9 +1,13 @@
 from itertools import combinations
 import logging
+from utils.io import load_config
+import os
+
+config = load_config(os.path.join(os.path.dirname(__file__), "greedy_heuristic.config"))
 
 
 # typing
-from typing import List, Callable, Tuple
+from typing import List, Any, Callable, Tuple
 from models.uld import ULD
 from models.package import Package
 
@@ -214,9 +218,21 @@ async def find_splits_economic_packages(
             message += f"{uld.id} "
         logging.info(message)
     # binary search for the split point of economic packages
+    new_economic_packages = [
+        package
+        for package in economic_packages
+        if (package.weight / (package.length * package.width * package.height))
+        <= config["density limit"]
+    ]
+    remaining_economic_packages = [
+        package
+        for package in economic_packages
+        if (package.weight / (package.length * package.width * package.height))
+        > config["density limit"]
+    ]
 
     lower_bound = 0
-    upper_bound = len(economic_packages)
+    upper_bound = len(new_economic_packages)
 
     while upper_bound - lower_bound > 1:
         mid = (upper_bound + lower_bound) // 2
@@ -224,7 +240,7 @@ async def find_splits_economic_packages(
         if mid == lower_bound or mid == upper_bound:
             break
 
-        partition_1 = [*priority_packages, *economic_packages[:mid]]
+        partition_1 = [*priority_packages, *new_economic_packages[:mid]]
         solver1 = solver(ulds=uld_group_1, packages=partition_1)
         await solver1.solve(only_check_fits=True)
         could_fit = await solver1.get_fit()
@@ -238,7 +254,10 @@ async def find_splits_economic_packages(
     if verbose:
         logging.info(f"Found split 1: {split_1}")
 
-    remaining_economic_packages = economic_packages[split_1:]
+    new_economic_packages = (
+        new_economic_packages[split_1:] + remaining_economic_packages
+    )
+    new_economic_packages = sort_packages(new_economic_packages, sorting_heuristic)
     split_2 = 0
 
     if len(uld_group_2) == 0:
@@ -246,14 +265,14 @@ async def find_splits_economic_packages(
 
     # binary search for the split point of economic packages
     lower_bound = 0
-    upper_bound = len(remaining_economic_packages)
+    upper_bound = len(new_economic_packages)
     while upper_bound - lower_bound > 1:
         mid = (upper_bound + lower_bound) // 2
 
         if mid == lower_bound or mid == upper_bound:
             break
 
-        partition_2 = remaining_economic_packages[:mid]
+        partition_2 = new_economic_packages[:mid]
         solver2 = solver(ulds=uld_group_2, packages=partition_2)
         await solver2.solve(only_check_fits=True)
         could_fit = await solver2.get_fit()

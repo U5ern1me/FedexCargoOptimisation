@@ -15,6 +15,7 @@ config = load_config(os.path.join(os.path.dirname(__file__), "greedy_heuristic.c
 
 class GreedyHeuristicStrategy(Strategy):
     async def solve(self):
+
         # initialize solver and step size
         solver = solvers[config["solver"]]
 
@@ -36,6 +37,8 @@ class GreedyHeuristicStrategy(Strategy):
         best_split_value = self.k_cost * (len(self.ulds) + 1)
         best_split_packages = (0, 0)
         best_split_uld_splits = (None, None)
+
+        uld_splits_arr = [[], [], [], [["U3", "U5", "U6"]]]
 
         for num_p_uld, uld_splits in enumerate(uld_splits_arr):
 
@@ -83,14 +86,28 @@ class GreedyHeuristicStrategy(Strategy):
                 logging.info(f"Found local best split: {local_best_split_packages}")
 
             # calculate the cost of the local best split
-            delay_cost = sum(
-                [
-                    package.delay_cost
-                    for package in sorted_economic_packages[
-                        local_best_split_packages[0] + local_best_split_packages[1] :
-                    ]
-                ]
+            new_economic_packages = [
+                package
+                for package in sorted_economic_packages
+                if (package.weight / (package.length * package.width * package.height))
+                <= config["density limit"]
+            ]
+            remaining_economic_packages = [
+                package
+                for package in sorted_economic_packages
+                if (package.weight / (package.length * package.width * package.height))
+                > config["density limit"]
+            ]
+
+            remaining_packages = (
+                new_economic_packages[local_best_split_packages[0] :]
+                + remaining_economic_packages
             )
+
+            remaining_packages = sort_packages(remaining_packages, sorting_heuristic)
+            remaining_packages = remaining_packages[local_best_split_packages[1] :]
+
+            delay_cost = sum([package.delay_cost for package in remaining_packages])
             spread_cost = self.k_cost * num_p_uld
             total_cost = delay_cost + spread_cost
 
@@ -104,17 +121,34 @@ class GreedyHeuristicStrategy(Strategy):
                 logging.info(f"Current best split: {best_split_value}")
 
         # get the final partition of packages
-        partition_1 = [
-            *priority_packages,
-            *sorted_economic_packages[: best_split_packages[0]],
+
+        new_economic_packages = [
+            package
+            for package in sorted_economic_packages
+            if (package.weight / (package.length * package.width * package.height))
+            <= config["density limit"]
         ]
-        partition_2 = sorted_economic_packages[
-            best_split_packages[0] : best_split_packages[0] + best_split_packages[1]
+        remaining_economic_packages = [
+            package
+            for package in sorted_economic_packages
+            if (package.weight / (package.length * package.width * package.height))
+            > config["density limit"]
         ]
 
-        remaining_packages = sorted_economic_packages[
-            best_split_packages[0] + best_split_packages[1] :
+        partition_1 = [
+            *priority_packages,
+            *new_economic_packages[: best_split_packages[0]],
         ]
+
+        remaining_packages = (
+            new_economic_packages[best_split_packages[0] :]
+            + remaining_economic_packages
+        )
+
+        remaining_packages = sort_packages(remaining_packages, sorting_heuristic)
+        partition_2 = remaining_packages[: best_split_packages[1]]
+
+        remaining_packages = remaining_packages[best_split_packages[1] :]
 
         # get the remaining packages
         remaining_packages = sort_packages(remaining_packages, sorting_heuristic_2)
@@ -123,7 +157,15 @@ class GreedyHeuristicStrategy(Strategy):
             logging.info(f"Remaining packages: {len(remaining_packages)}")
 
         _remaining_packages = []
-        for package in remaining_packages[: config["error tuning"]]:
+        for iter_num, package in enumerate(
+            remaining_packages[: config["error tuning"]]
+        ):
+
+            if self.debug:
+                logging.info(
+                    f"Checking package {iter_num} of {len(remaining_packages)}"
+                )
+
             if len(best_split_uld_splits[0]) > 0:
                 _partition_1 = partition_1 + [package]
                 _solver_1 = solver(
