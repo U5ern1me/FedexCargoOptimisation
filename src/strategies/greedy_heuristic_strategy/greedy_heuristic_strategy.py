@@ -141,37 +141,20 @@ class GreedyHeuristicStrategy(Strategy):
                 logging.info(f"Current best split: {best_split_value}")
 
         # get the final partition of packages
-
-        new_economic_packages = [
-            package
-            for package in sorted_economic_packages
-            if (package.weight / (package.length * package.width * package.height))
-            <= config["density limit"]
-        ]
-        remaining_economic_packages = [
-            package
-            for package in sorted_economic_packages
-            if (package.weight / (package.length * package.width * package.height))
-            > config["density limit"]
-        ]
-
         partition_1 = [
             *priority_packages,
-            *new_economic_packages[: best_split_packages[0]],
+            *sorted_economic_packages[: best_split_packages[0]],
         ]
 
-        remaining_packages = (
-            new_economic_packages[best_split_packages[0] :]
-            + remaining_economic_packages
-        )
+        sorted_economic_packages = sorted_economic_packages[best_split_packages[0] :]
+        partition_2 = sorted_economic_packages[: best_split_packages[1]]
 
-        remaining_packages = sort_packages(remaining_packages, sorting_heuristic_2)
-        partition_2 = remaining_packages[: best_split_packages[1]]
-
-        remaining_packages = remaining_packages[best_split_packages[1] :]
+        sorted_economic_packages = sorted_economic_packages[best_split_packages[1] :]
 
         # get the remaining packages
-        remaining_packages = sort_packages(remaining_packages, sorting_heuristic_2)
+        remaining_packages = sort_packages(
+            sorted_economic_packages, sorting_heuristic_2
+        )
 
         if self.debug:
             logging.info(f"Remaining packages: {len(remaining_packages)}")

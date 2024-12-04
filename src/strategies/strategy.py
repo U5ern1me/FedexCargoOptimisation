@@ -40,6 +40,12 @@ class Strategy(ABC):
         self.ulds = ulds
         self.packages = packages
 
+        # check if packages and ulds are not empty
+        if self.packages is None or len(self.packages) == 0:
+            raise ValueError("Packages not provided")
+        if self.ulds is None or len(self.ulds) == 0:
+            raise ValueError("ULD not provided")
+
         self.solution_found = False
         self.time_start = time.time()
 
