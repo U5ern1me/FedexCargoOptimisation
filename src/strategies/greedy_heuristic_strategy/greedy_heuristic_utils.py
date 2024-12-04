@@ -4,7 +4,7 @@ from utils.io import load_config
 import os
 
 config = load_config(os.path.join(os.path.dirname(__file__), "greedy_heuristic.config"))
-
+from strategies.strategy import Strategy
 
 # typing
 from typing import List, Any, Callable, Tuple
@@ -253,7 +253,7 @@ async def find_splits_economic_packages(
 
     if verbose:
         logging.info(f"Found split 1: {split_1}")
-
+    
     new_economic_packages = (
         new_economic_packages[split_1:] + remaining_economic_packages
     )

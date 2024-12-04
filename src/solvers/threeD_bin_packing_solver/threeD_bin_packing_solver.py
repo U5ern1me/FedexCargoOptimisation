@@ -102,7 +102,66 @@ class ThreeDBinPackingSolver(Solver):
             for _package in _uld["items"]:
                 num_packages -= 1
 
-        return num_packages == 0
+        if num_packages != 0:
+            return False
+
+        uld_package_map = {}
+
+        for _uld in result["bins_packed"]:
+            for package in _uld["items"]:
+                uld_id= _uld["bin_data"]["id"]
+                if uld_id not in uld_package_map:
+                    uld_package_map[uld_id] = []
+
+                uld_package_map[uld_id].append(package)
+
+        for uld_id, packages in uld_package_map.items():
+            uld = next((uld for uld in self.ulds if uld.id == uld_id), None)
+
+            for i in range(len(packages)):
+
+                if (
+                    packages[i]["coordinates"]["x2"] > uld.length
+                    or packages[i]["coordinates"]["y2"] > uld.width
+                    or packages[i]["coordinates"]["z2"] > uld.height
+                ):
+                    self.error = (
+                        f"Package {packages[i]['id']} exceeds ULD {uld_id} dimensions"
+                    )
+                    return False
+
+                for j in range(i + 1, len(packages)):
+                    x1_min, x1_max = min(
+                        packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"]
+                    ), max(packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"])
+                    y1_min, y1_max = min(
+                        packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"]
+                    ), max(packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"])
+                    z1_min, z1_max = min(
+                        packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"]
+                    ), max(packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"])
+
+                    x2_min, x2_max = min(
+                        packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"]
+                    ), max(packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"])
+                    y2_min, y2_max = min(
+                        packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"]
+                    ), max(packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"])
+                    z2_min, z2_max = min(
+                        packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"]
+                    ), max(packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"])
+
+                    x_overlap = max(0, min(x1_max, x2_max) - max(x1_min, x2_min))
+                    y_overlap = max(0, min(y1_max, y2_max) - max(y1_min, y2_min))
+                    z_overlap = max(0, min(z1_max, z2_max) - max(z1_min, z2_min))
+
+                    if x_overlap > 0 and y_overlap > 0 and z_overlap > 0:
+                        self.error = (
+                            f"Packages {packages[i]['id']} and {packages[j]['id']} overlap"
+                        )
+                        return False
+
+        return True
 
     async def _parse_result(self, result: Dict[str, Any]):
         for _uld in result["bins_packed"]:

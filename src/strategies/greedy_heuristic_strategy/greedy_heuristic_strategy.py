@@ -2,7 +2,6 @@ import os
 import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
 from strategies.strategy import Strategy
 from solvers import solvers
 from .greedy_heuristic_utils import *
@@ -34,11 +33,11 @@ class GreedyHeuristicStrategy(Strategy):
             logging.info(f"{uld_splits_arr}")
 
         # initialize best split value and packages
-        best_split_value = self.k_cost * (len(self.ulds) + 1)
+        best_split_value = float("inf")
         best_split_packages = (0, 0)
         best_split_uld_splits = (None, None)
 
-        uld_splits_arr = [[], [], [], [["U3", "U5", "U6"]]]
+        # uld_splits_arr = [[], [], [], [["U3", "U5", "U6"]]]
 
         for num_p_uld, uld_splits in enumerate(uld_splits_arr):
 
@@ -163,10 +162,10 @@ class GreedyHeuristicStrategy(Strategy):
 
             if self.debug:
                 logging.info(
-                    f"Checking package {iter_num} of {len(remaining_packages)}"
+                    f"Checking package {iter_num} of {config['error tuning']}"
                 )
 
-            if len(best_split_uld_splits[0]) > 0:
+            if best_split_uld_splits[0] != None and len(best_split_uld_splits[0]) > 0:
                 _partition_1 = partition_1 + [package]
                 _solver_1 = solver(
                     ulds=best_split_uld_splits[0],
@@ -176,8 +175,8 @@ class GreedyHeuristicStrategy(Strategy):
                 if await _solver_1.get_fit():
                     partition_1.append(package)
                     continue
-
-            if len(best_split_uld_splits[1]) > 0:
+            
+            if best_split_uld_splits[1] != None and len(best_split_uld_splits[1]) > 0:
                 _partition_2 = partition_2 + [package]
                 _solver_2 = solver(
                     ulds=best_split_uld_splits[1],
