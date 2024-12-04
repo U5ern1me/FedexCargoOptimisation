@@ -91,7 +91,7 @@ class ThreeDBinPackingSolver(Solver):
             if self.response is None:
                 raise Exception("No response from 3D bin packing solver")
 
-            return self.response.json()
+            return self.response.json()["response"]
         except Exception as e:
             raise Exception(f"Error getting result from 3D bin packing solver: {e}")
 

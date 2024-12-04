@@ -1,9 +1,9 @@
 from itertools import combinations
+import logging
 
-DEBUG = True
 
 # typing
-from typing import List, Any, Callable, Tuple
+from typing import List, Callable, Tuple
 from models.uld import ULD
 from models.package import Package
 
@@ -50,7 +50,9 @@ def get_all_division_of_ulds(ulds: List[ULD], check_top: int) -> List[List[List[
         possible_combinations = combinations(uld_rep_list, i)
         # get only the top check_top unique combinations
         actual_combinations = sorted(
-            set(possible_combinations), key=lambda x: sum(x), reverse=True
+            list(set(possible_combinations)),
+            key=lambda x: sum(x),
+            reverse=True,
         )
         actual_combinations = actual_combinations[:check_top]
 
@@ -132,6 +134,21 @@ def sorting_heuristic(package: Package) -> float:
     return package.delay_cost / volume
 
 
+def sorting_heuristic_2(package: Package) -> float:
+    """
+    Heuristic to sort the packages.
+
+    Args:
+        package: Package
+
+    Returns:
+        Value to sort the packages
+    """
+    return package.delay_cost / (
+        package.length * package.width * package.height * (package.weight**0.15)
+    )
+
+
 def virtual_fit_priority(
     priority_packages: List[Package], uld_group_1: List[ULD]
 ) -> bool:
@@ -169,13 +186,13 @@ def virtual_fit_priority(
     return True
 
 
-def find_splits_economic_packages(
+async def find_splits_economic_packages(
     economic_packages: List[Package],
     priority_packages: List[Package],
     uld_group_1: List[ULD],
     uld_group_2: List[ULD],
     solver: Callable,
-    step_size: int,
+    verbose: bool = False,
 ) -> Tuple[int, int]:
     """
     Find the splits of the economic packages.
@@ -186,47 +203,40 @@ def find_splits_economic_packages(
         uld_group_1: List of ULDs in group 1
         uld_group_2: List of ULDs in group 2
         solver: Solver to check if the packages fit in the ULDs
-        step_size: Step size to search for split point 1
+        verbose: Whether to print the steps
 
     Returns:
         Split 1, split 2
     """
-    if DEBUG:
-        print(f"Trying to fit priority packages in ULDS: ", end="")
+    if verbose:
+        message = "Trying to fit priority and economic packages in ULDS: "
         for uld in uld_group_1:
-            print(uld.id, end=" ")
-        print()
+            message += f"{uld.id} "
+        logging.info(message)
+    # binary search for the split point of economic packages
 
-    # stepped search for the split point of economic packages
-    _split_1 = 0
-    while True:
-        if DEBUG:
-            print(f"Trying to fit {_split_1} economic packages")
-        partition_1 = [*priority_packages, *economic_packages[:_split_1]]
-        solver = solver(ulds=uld_group_1, packages=partition_1, only_check_fits=True)
-        could_fit = solver.solve()
-        if not could_fit:
+    lower_bound = 0
+    upper_bound = len(economic_packages)
+
+    while upper_bound - lower_bound > 1:
+        mid = (upper_bound + lower_bound) // 2
+
+        if mid == lower_bound or mid == upper_bound:
             break
-        _split_1 += step_size
 
-    if _split_1 == 0:
-        return None
-
-    split_1 = _split_1 - step_size
-    split_1_range = range(_split_1 - step_size + 1, _split_1)
-
-    # linear search for the last valid and first invalid split point of economic packages
-    for _split_1 in split_1_range:
-        partition_1 = [*priority_packages, *economic_packages[:_split_1]]
-        solver = solver(ulds=uld_group_1, packages=partition_1, only_check_fits=True)
-        could_fit = solver.solve()
-        if not could_fit:
-            break
+        partition_1 = [*priority_packages, *economic_packages[:mid]]
+        solver1 = solver(ulds=uld_group_1, packages=partition_1)
+        await solver1.solve(only_check_fits=True)
+        could_fit = await solver1.get_fit()
+        if could_fit:
+            lower_bound = mid
         else:
-            split_1 = _split_1
+            upper_bound = mid
 
-    if DEBUG:
-        print(f"Found split 1: {split_1}")
+    split_1 = lower_bound
+
+    if verbose:
+        logging.info(f"Found split 1: {split_1}")
 
     remaining_economic_packages = economic_packages[split_1:]
     split_2 = 0
@@ -244,8 +254,9 @@ def find_splits_economic_packages(
             break
 
         partition_2 = remaining_economic_packages[:mid]
-        solver = solver(ulds=uld_group_2, packages=partition_2, only_check_fits=True)
-        could_fit = solver.solve()
+        solver2 = solver(ulds=uld_group_2, packages=partition_2)
+        await solver2.solve(only_check_fits=True)
+        could_fit = await solver2.get_fit()
         if could_fit:
             lower_bound = mid
         else:
@@ -254,7 +265,7 @@ def find_splits_economic_packages(
     # the last valid split point of economic packages
     split_2 = lower_bound
 
-    if DEBUG:
-        print(f"Found split 2: {split_2}")
+    if verbose:
+        logging.info(f"Found split 2: {split_2}")
 
     return (split_1, split_2)
