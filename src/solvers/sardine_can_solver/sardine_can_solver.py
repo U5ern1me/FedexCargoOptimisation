@@ -94,14 +94,14 @@ class SardineCanSolver(Solver):
         }
 
         async with session.post(request_url, json=request_body) as response:
-            self.response = response
+            self.response = await response.json()
 
     async def _get_result(self, session: aiohttp.ClientSession = None):
         try:
             if self.response is None:
                 raise Exception("No response from sardine can solver")
 
-            res = self.response.json()
+            res = self.response
             status_url = config["base url"] + res["statusUrl"]
             result_url = config["base url"] + res["resultUrl"]
 
