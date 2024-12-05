@@ -1,4 +1,4 @@
-from typing import List, Tuple, Dict, Any
+from typing import List, Tuple, Dict
 import matplotlib.pyplot as plt
 import random
 import os
@@ -811,7 +811,20 @@ class PackagePackerMRA:
         return self.total_packed_bins
 
 
-def pack_package(udf, pdf):
+def pack_package(
+    udf: pd.DataFrame, pdf: pd.DataFrame
+) -> List[Tuple[str, int, int, int, int, int, int]]:
+    """
+    Pack the packages using multiple strategies and select the best of them.
+
+    Args:
+        udf (pd.DataFrame): ULD data frame containing container dimensions and height.
+        pdf (pd.DataFrame): Package data frame containing box dimensions and identifiers.
+
+    Returns:
+        List of tuples, where each tuple contains:
+            (box no, x, y, z, x+width, y+height, z+height).
+    """
     # Initialize packers for each algorithm
     packer_nfdh = PackagePackerNFDH(udf, pdf)
     packer_ffdh = PackagePackerFFDH(udf, pdf)
