@@ -94,30 +94,30 @@ class SardineCanSolver(Solver):
         }
 
         async with session.post(request_url, json=request_body) as response:
-            self.response = response
+            self.response = await response.json()
 
     async def _get_result(self, session: aiohttp.ClientSession = None):
-        try:
-            if self.response is None:
-                raise Exception("No response from sardine can solver")
+        # try:
+        if self.response is None:
+            raise Exception("No response from sardine can solver")
 
-            res = self.response.json()
-            status_url = config["base url"] + res["statusUrl"]
-            result_url = config["base url"] + res["resultUrl"]
+        res = self.response
+        status_url = config["base url"] + res["statusUrl"]
+        result_url = config["base url"] + res["resultUrl"]
 
-            # polling until the result is ready
-            while True:
-                async with session.get(status_url) as response:
-                    res = await response.json()
-                    if res["status"] == "DONE":
-                        break
+        # polling until the result is ready
+        while True:
+            async with session.get(status_url) as response:
+                res = await response.json()
+                if res["status"] == "DONE":
+                    break
 
-                await asyncio.sleep(config["polling interval"])
+            await asyncio.sleep(config["polling interval"])
 
-            async with session.get(result_url) as response:
-                return await response.json()
-        except Exception as e:
-            raise Exception(f"Error getting result from sardine can solver: {e}")
+        async with session.get(result_url) as response:
+            return await response.json()
+        # except Exception as e:
+        #     raise Exception(f"Error getting result from sardine can solver: {e}")
 
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
