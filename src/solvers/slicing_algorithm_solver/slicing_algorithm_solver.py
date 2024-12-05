@@ -74,14 +74,113 @@ class SlicingAlgorithmSolver(Solver):
             raise Exception(f"Error getting result from slicing algorithm solver: {e}")
 
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
-        return self.package_specific_df.empty
+        num_packages = len(self.packages)
+
+        for _uld in result["bins_packed"]:
+            for _package in _uld["items"]:
+                num_packages -= 1
+
+        if num_packages != 0:
+            return False
+
+        uld_package_map = {}
+
+        for _uld in result["bins_packed"]:
+            for package in _uld["items"]:
+                uld_id= _uld["bin_data"]["id"]
+                if uld_id not in uld_package_map:
+                    uld_package_map[uld_id] = []
+
+                uld_package_map[uld_id].append(package)
+
+        for uld_id, packages in uld_package_map.items():
+            uld = next((uld for uld in self.ulds if uld.id == uld_id), None)
+
+            for i in range(len(packages)):
+
+                if (
+                    packages[i]["coordinates"]["x2"] > uld.length
+                    or packages[i]["coordinates"]["y2"] > uld.width
+                    or packages[i]["coordinates"]["z2"] > uld.height
+                ):
+                    self.error = (
+                        f"Package {packages[i]['id']} exceeds ULD {uld_id} dimensions"
+                    )
+                    return False
+
+                for j in range(i + 1, len(packages)):
+                    x1_min, x1_max = min(
+                        packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"]
+                    ), max(packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"])
+                    y1_min, y1_max = min(
+                        packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"]
+                    ), max(packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"])
+                    z1_min, z1_max = min(
+                        packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"]
+                    ), max(packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"])
+
+                    x2_min, x2_max = min(
+                        packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"]
+                    ), max(packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"])
+                    y2_min, y2_max = min(
+                        packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"]
+                    ), max(packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"])
+                    z2_min, z2_max = min(
+                        packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"]
+                    ), max(packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"])
+
+                    x_overlap = max(0, min(x1_max, x2_max) - max(x1_min, x2_min))
+                    y_overlap = max(0, min(y1_max, y2_max) - max(y1_min, y2_min))
+                    z_overlap = max(0, min(z1_max, z2_max) - max(z1_min, z2_min))
+
+                    if x_overlap > 0 and y_overlap > 0 and z_overlap > 0:
+                        self.error = (
+                            f"Packages {packages[i]['id']} and {packages[j]['id']} overlap"
+                        )
+                        return False
+
+        return True
 
     async def _parse_result(self, result: Dict[str, Any]):
-        for uld_id, packed_bins in result.items():
-            for packed_bin in packed_bins:
-                for package in self.packages:
-                    if packed_bin[0] == package.id:
-                        package.uld_id = uld_id
-                        package.point1 = (packed_bin[1], packed_bin[2], packed_bin[3])
-                        package.point2 = (packed_bin[4], packed_bin[5], packed_bin[6])
-                        break
+        for _uld in result["bins_packed"]:
+            for _package in _uld["items"]:
+                # get package
+                package_id = _package["id"]
+                package = self.package_map[package_id]
+
+                # set uld id and coordinates
+                uld_id = _uld["bin_data"]["id"]
+                package.uld_id = uld_id
+                x = _package["coordinates"]["x1"]
+                y = _package["coordinates"]["y1"]
+                z = _package["coordinates"]["z1"]
+                package.point1 = (x, y, z)
+                x = _package["coordinates"]["x2"]
+                y = _package["coordinates"]["y2"]
+                z = _package["coordinates"]["z2"]
+                package.point2 = (x, y, z)
+
+    def check_all_fit(self) -> bool:
+        """
+        Check if all packages fit in the ULDs
+        """
+        for package in self.packages:
+            if package.uld_id == None:
+                return False
+
+        return True
+
+    async def get_fit(self) -> bool:
+        """
+        Get the result of the solving process
+        """
+
+        result = await self._get_result()
+
+        if self.only_check_fits:
+            valid = await self._only_check_fits(result)
+        else:
+            await self._parse_result(result)
+            valid = self.check_all_fit()
+
+        return valid
