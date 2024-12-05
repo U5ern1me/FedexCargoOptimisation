@@ -3,8 +3,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import requests
-
+import asyncio
+import aiohttp
+import random
 from solvers.solver import Solver
 from utils.io import load_config
 
@@ -65,7 +66,25 @@ class ThreeDBinPackingSolver(Solver):
             "q": 1,
         }
 
-    async def _solve(self):
+    async def _solve_with_retry(
+        self, session: aiohttp.ClientSession = None, max_retries: int = 3
+    ):
+        retries = 0
+        while retries < max_retries:
+            try:
+                await self._send_request(session=session)
+                return
+            except Exception as e:
+                if retries < max_retries - 1:
+                    backoff_time = random.uniform(
+                        2**retries, 2 ** (retries + 1)
+                    )  # Exponential backoff
+                    await asyncio.sleep(backoff_time)
+                    retries += 1
+                else:
+                    raise e
+
+    async def _send_request(self, session: aiohttp.ClientSession = None):
         headers = {
             "Accept": "application/json",
         }
@@ -84,14 +103,33 @@ class ThreeDBinPackingSolver(Solver):
             "params": params,
         }
 
-        self.response = requests.post(request_url, headers=headers, json=request_body)
+        try:
+            async with session.post(
+                request_url, headers=headers, json=request_body
+            ) as response:
+                if response.status != 200:
+                    res_text = await response.text()
+                    raise Exception(res_text)
 
-    async def _get_result(self):
+                res_json = await response.json()
+
+                if res_json["response"]["status"] == -1:
+                    raise Exception(res_json["response"]["errors"][0]["message"])
+
+                self.response = res_json["response"]
+
+        except Exception as e:
+            raise Exception(f"API error with 3D bin packing solver: {e}")
+
+    async def _solve(self, session: aiohttp.ClientSession = None):
+        await self._solve_with_retry(session=session, max_retries=3)
+
+    async def _get_result(self, session: aiohttp.ClientSession = None):
         try:
             if self.response is None:
                 raise Exception("No response from 3D bin packing solver")
 
-            response = self.response.json()["response"]
+            response = self.response
 
             if "errors" in response:
                 raise Exception("API access was locked out.")
