@@ -9,9 +9,10 @@ import asyncio
 import logging
 
 from utils.io import read_ulds, read_packages, read_k, write_output, load_config
+from utils.visualizer import visualize
 from strategies import strategies
 
-config = load_config("src/main.config")
+config = load_config(os.path.join(os.path.dirname(__file__), "main.config"))
 
 
 async def main():
@@ -29,7 +30,13 @@ async def main():
         "--debug",
         "-d",
         action="store_true",
-        help="Print debug information",
+        help="Log debug information",
+    )
+    parser.add_argument(
+        "--visualize",
+        "-v",
+        action="store_true",
+        help="Visualize the solution",
     )
     args = parser.parse_args()
 
@@ -94,6 +101,10 @@ async def main():
     print(
         f"Output saved to {output_path}, time taken: {(strategy.time_end - strategy.time_start):.2f} seconds"
     )
+
+    if args.visualize:
+        print("Visualizing solution...")
+        visualize(output_path, config["data path"])
 
     # if log file is empty and debug is false, delete logfile
     if not args.debug and os.path.exists(log_path):
