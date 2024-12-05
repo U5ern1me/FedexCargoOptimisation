@@ -1,23 +1,18 @@
-import pandas as pd
-
 from typing import List, Tuple, Dict, Any
 import matplotlib.pyplot as plt
 import random
 import os
-import sys
-from strategies.strategy import Strategy
-from solvers.solver import Solver
-from models.package import Package
-from models.uld import ULD
+import pandas as pd
 
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+# typing
+from typing import List, Tuple
 
 
 class PackageSelector:
     def __init__(self, epsilon=2):
         """
         Initialize the PackageSelector with a fixed epsilon value.
-        
+
         Parameters:
             epsilon (int): The range tolerance for selecting packages.
         """
@@ -27,25 +22,27 @@ class PackageSelector:
     def build_dimension_map(self, pdf):
         """
         Build the dimension-to-box mapping.
-        
+
         Parameters:
             pdf (DataFrame): DataFrame containing 'length', 'width', 'height', and 'box no'.
         """
         for _, row in pdf.iterrows():
-            self.mp[row['length']].add(row['box no'])
-            self.mp[row['width']].add(row['box no'])
-            self.mp[row['height']].add(row['box no'])
+            self.mp[row["length"]].add(row["box no"])
+            self.mp[row["width"]].add(row["box no"])
+            self.mp[row["height"]].add(row["box no"])
 
     def find_max_index(self):
         """
         Find the dimension range with the most packages.
-        
+
         Returns:
             tuple: (max_index, max_value)
         """
         max_index, max_value = None, -1
         for i in range(4, 200):
-            curr_value = sum(len(self.mp.get(i - j, set())) for j in range(self.epsilon + 1))
+            curr_value = sum(
+                len(self.mp.get(i - j, set())) for j in range(self.epsilon + 1)
+            )
             if curr_value > max_value:
                 max_value = curr_value
                 max_index = i
@@ -54,11 +51,11 @@ class PackageSelector:
     def select_and_adjust_packages(self, pdf, max_index):
         """
         Select and adjust packages to fit within the dimension range.
-        
+
         Parameters:
             pdf (DataFrame): DataFrame containing package details.
             max_index (int): The selected maximum dimension index.
-        
+
         Returns:
             list: Selected packages with their dimensions.
         """
@@ -68,26 +65,34 @@ class PackageSelector:
 
         select_package_list = []
         for box_no in selected_packages:
-            package = pdf[pdf['box no'] == box_no].iloc[0]
-            if package['height'] < max_index - self.epsilon or package['height'] > max_index:
-                if package['length'] >= max_index - self.epsilon and package['length'] <= max_index:
-                    pdf.loc[pdf['box no'] == box_no, ['length', 'height']] = (
-                        package['height'], package['length']
+            package = pdf[pdf["box no"] == box_no].iloc[0]
+            if (
+                package["height"] < max_index - self.epsilon
+                or package["height"] > max_index
+            ):
+                if (
+                    package["length"] >= max_index - self.epsilon
+                    and package["length"] <= max_index
+                ):
+                    pdf.loc[pdf["box no"] == box_no, ["length", "height"]] = (
+                        package["height"],
+                        package["length"],
                     )
                 else:
-                    pdf.loc[pdf['box no'] == box_no, ['width', 'height']] = (
-                        package['height'], package['width']
+                    pdf.loc[pdf["box no"] == box_no, ["width", "height"]] = (
+                        package["height"],
+                        package["width"],
                     )
-            select_package_list.append((box_no, package['length'], package['width']))
+            select_package_list.append((box_no, package["length"], package["width"]))
         return select_package_list
 
     def choose_packages(self, pdf):
         """
         Main method to select and adjust packages based on their dimensions.
-        
+
         Parameters:
             pdf (DataFrame): DataFrame containing 'length', 'width', 'height', and 'box no'.
-        
+
         Returns:
             tuple: (max_index, selected_packages)
         """
@@ -95,6 +100,7 @@ class PackageSelector:
         max_index, _ = self.find_max_index()
         selected_packages = self.select_and_adjust_packages(pdf, max_index)
         return max_index, selected_packages
+
 
 class NFDHPacker:
     def __init__(self, container_width: int, container_height: int):
@@ -108,7 +114,9 @@ class NFDHPacker:
         self.container_width = container_width
         self.container_height = container_height
 
-    def pack_bins(self, uld_bins: List[Tuple[str, int, int]]) -> List[Tuple[str, int, int, int, int]]:
+    def pack_bins(
+        self, uld_bins: List[Tuple[str, int, int]]
+    ) -> List[Tuple[str, int, int, int, int]]:
         """
         Pack bins into a container using the NFDH algorithm.
 
@@ -128,7 +136,7 @@ class NFDHPacker:
                 - y-coordinate of the bin's top-left corner (int)
                 - bin width (int)
                 - bin height (int)
-        
+
         Note:
             If any bin cannot fit into the container, the method stops packing and
             returns the bins packed up to that point.
@@ -150,7 +158,9 @@ class NFDHPacker:
             # Check if the bin fits horizontally in the current row
             if current_x + bin_width > self.container_width:
                 # Move to the next row since there is no horizontal space left
-                current_y += current_row_height  # Advance vertical position by row height
+                current_y += (
+                    current_row_height  # Advance vertical position by row height
+                )
                 if current_y + bin_height > self.container_height:
                     # If there is no vertical space for the next row, return packed bins
                     return packed_bins
@@ -164,9 +174,12 @@ class NFDHPacker:
 
             # Update the current row's horizontal position and maximum height
             current_x += bin_width  # Advance horizontal position
-            current_row_height = max(current_row_height, bin_height)  # Update row height
+            current_row_height = max(
+                current_row_height, bin_height
+            )  # Update row height
 
         return packed_bins
+
 
 class FFDHPacker:
     def __init__(self, container_width: int, container_height: int):
@@ -180,7 +193,9 @@ class FFDHPacker:
         self.container_width = container_width
         self.container_height = container_height
 
-    def pack_bins(self, uld_bins: List[Tuple[str, int, int]]) -> List[Tuple[str, int, int, int, int]]:
+    def pack_bins(
+        self, uld_bins: List[Tuple[str, int, int]]
+    ) -> List[Tuple[str, int, int, int, int]]:
         """
         Pack bins into a container using the FFDH algorithm.
 
@@ -200,7 +215,7 @@ class FFDHPacker:
                 - y-coordinate of the bin's top-left corner (int)
                 - bin width (int)
                 - bin height (int)
-        
+
         Note:
             If any bin cannot fit into the container, the method stops packing and
             returns the bins packed up to that point.
@@ -209,7 +224,9 @@ class FFDHPacker:
         uld_bins = sorted(uld_bins, key=lambda x: x[2], reverse=True)
 
         packed_bins = []  # List to store the packed bins and their positions
-        rows = []  # List of rows; each row is a tuple (current_y_position, current_width_of_row)
+        rows = (
+            []
+        )  # List of rows; each row is a tuple (current_y_position, current_width_of_row)
 
         for bin_id, bin_width, bin_height in uld_bins:
             # Skip bins that are larger than the container dimensions
@@ -239,7 +256,7 @@ class FFDHPacker:
                 total_row_height = sum(r[0] for r in rows)
                 if total_row_height + bin_height > self.container_height:
                     return packed_bins  # No space left for additional rows
-                
+
                 # Add the bin to a new row
                 x_pos = 0  # New row starts at the leftmost position
                 y_pos = total_row_height
@@ -249,6 +266,7 @@ class FFDHPacker:
                 rows.append((y_pos + bin_height, bin_width))
 
         return packed_bins
+
 
 class MRA_Packer:
     def __init__(self, container_width: int, container_height: int):
@@ -268,7 +286,7 @@ class MRA_Packer:
         """
         Pack bins into a container using the Maximal Rectangle Algorithm (MRA).
 
-        The algorithm uses a 2D grid to represent the container and places bins in the first 
+        The algorithm uses a 2D grid to represent the container and places bins in the first
         available maximal rectangle that can fit the bin, row by row.
 
         Args:
@@ -284,7 +302,7 @@ class MRA_Packer:
                 - y-coordinate of the bin's top-left corner (int)
                 - bin width (int)
                 - bin height (int)
-        
+
         Note:
             If a bin cannot fit into the container, it is skipped.
         """
@@ -331,6 +349,7 @@ class MRA_Packer:
 
         return packed_bins
 
+
 def generate_packing_figure(bin_size, boxes, file_path):
     """
     Generate a visualization of rectangle packing within a bin.
@@ -361,13 +380,13 @@ def generate_packing_figure(bin_size, boxes, file_path):
     ax.plot(
         [0, bin_width, bin_width, 0, 0],  # X coordinates of bin boundary
         [0, 0, bin_height, bin_height, 0],  # Y coordinates of bin boundary
-        'k-', linewidth=2, label="Bin"  # Black border line with a label
+        "k-",
+        linewidth=2,
+        label="Bin",  # Black border line with a label
     )
 
     # Assign random colors to boxes for visual distinction
-    colors = [
-        (random.random(), random.random(), random.random()) for _ in boxes
-    ]
+    colors = [(random.random(), random.random(), random.random()) for _ in boxes]
 
     # Draw each box within the bin
     for i, (x, y, width, height) in enumerate(boxes):
@@ -394,6 +413,7 @@ def generate_packing_figure(bin_size, boxes, file_path):
         raise ValueError(f"Failed to save the figure: {e}")
 
     plt.close(fig)  # Close the plot to free memory
+
 
 class PackagePackerNFDH:
     def __init__(self, udf: pd.DataFrame, pdf: pd.DataFrame):
@@ -422,15 +442,17 @@ class PackagePackerNFDH:
             select_height (int): The total height of the selected packages.
             select_package_list (List[Tuple[str, int, int]]): Selected packages with dimensions.
         """
-        select_height = pdf['height'].min()
-        selected_packages = pdf[pdf['height'] == select_height]
+        select_height = pdf["height"].min()
+        selected_packages = pdf[pdf["height"] == select_height]
         select_package_list = [
-            (row['box no'], row['length'], row['width'])
+            (row["box no"], row["length"], row["width"])
             for _, row in selected_packages.iterrows()
         ]
         return select_height, select_package_list
 
-    def generate_diagram(self, index: int, current_layer: int, row: Dict, packed_bins: List):
+    def generate_diagram(
+        self, index: int, current_layer: int, row: Dict, packed_bins: List
+    ):
         """
         Generate a visual diagram of the packing arrangement.
 
@@ -440,7 +462,7 @@ class PackagePackerNFDH:
             row (Dict): Current row of ULD data being processed.
             packed_bins (List): List of packed bin details.
         """
-        uld_size = (row['length'], row['width'])
+        uld_size = (row["length"], row["width"])
         bin_coordinates = {bin_id: (x, y, w, h) for bin_id, x, y, w, h in packed_bins}
         file_path = f"../fig/nfdh_diagram_{index}_{current_layer}.pdf"
 
@@ -462,27 +484,31 @@ class PackagePackerNFDH:
             curr_base = 0  # Tracks the current z-coordinate base for stacking
             current_layer = 0  # Tracks the number of layers used for the current ULD
 
-            while row['height'] >= self.pdf['height'].min():
+            while row["height"] >= self.pdf["height"].min():
                 current_layer += 1
                 # Initialize the packer for the current ULD dimensions
-                packer2d = NFDHPacker(row['length'], row['width'])
+                packer2d = NFDHPacker(row["length"], row["width"])
 
                 # Choose packages to fit in the current height layer
                 select_height, select_package_list = self.choose_packages(self.pdf)
-                if select_height > row['height']:
+                if select_height > row["height"]:
                     break  # No more packages can fit in this ULD
 
                 selected_box_nos = [box[0] for box in select_package_list]
                 # Filter the DataFrame where 'box no' is in the selected_box_nos
-                filtered_select_df = self.pdf[self.pdf['box no'].isin(selected_box_nos)]
-                
-                while row['weight_limit'] < filtered_select_df['weight'].sum():
-                    max_weight_index = filtered_select_df['weight'].idxmax()
+                filtered_select_df = self.pdf[self.pdf["box no"].isin(selected_box_nos)]
+
+                while row["weight_limit"] < filtered_select_df["weight"].sum():
+                    max_weight_index = filtered_select_df["weight"].idxmax()
                     # Drop the row with the maximum 'Weight' using its index
                     filtered_select_df = filtered_select_df.drop(index=max_weight_index)
                 if filtered_select_df.empty:
                     break
-                select_package_list = list(filtered_select_df[['box no', 'length', 'width']].itertuples(index=False, name=None))
+                select_package_list = list(
+                    filtered_select_df[["box no", "length", "width"]].itertuples(
+                        index=False, name=None
+                    )
+                )
 
                 # Pack the selected packages
                 packed_bins = packer2d.pack_bins(select_package_list)
@@ -492,9 +518,9 @@ class PackagePackerNFDH:
 
                 # Add packed bins to the total packed bins list
                 for bin in packed_bins:
-                    box_row = self.pdf[self.pdf['box no'] == bin[0]]
+                    box_row = self.pdf[self.pdf["box no"] == bin[0]]
                     if not box_row.empty:
-                        height = box_row.iloc[0]['height']
+                        height = box_row.iloc[0]["height"]
                     self.total_packed_bins.append(
                         (
                             bin[0],  # Box identifier
@@ -509,17 +535,18 @@ class PackagePackerNFDH:
 
                 # Remove packed boxes from the package data frame
                 packed_box_nos = [box_no for box_no, _, _, _, _ in packed_bins]
-                self.pdf = self.pdf[~self.pdf['box no'].isin(packed_box_nos)]
+                self.pdf = self.pdf[~self.pdf["box no"].isin(packed_box_nos)]
 
                 # Update the height of the ULD and the base for stacking
-                row['height'] -= select_height
-                row['weight_limit'] -= filtered_select_df['weight'].sum()
+                row["height"] -= select_height
+                row["weight_limit"] -= filtered_select_df["weight"].sum()
                 curr_base += select_height
 
                 # Increment the total packed box count
                 self.total_boxes_packed += len(packed_box_nos)
 
         return self.total_packed_bins
+
 
 class PackagePackerFFDH:
     def __init__(self, udf: pd.DataFrame, pdf: pd.DataFrame):
@@ -548,15 +575,17 @@ class PackagePackerFFDH:
             select_height (int): The total height of the selected packages.
             select_package_list (List[Tuple[str, int, int]]): Selected packages with dimensions.
         """
-        select_height = pdf['height'].min()
-        selected_packages = pdf[pdf['height'] == select_height]
+        select_height = pdf["height"].min()
+        selected_packages = pdf[pdf["height"] == select_height]
         select_package_list = [
-            (row['box no'], row['length'], row['width'])
+            (row["box no"], row["length"], row["width"])
             for _, row in selected_packages.iterrows()
         ]
         return select_height, select_package_list
 
-    def generate_diagram(self, index: int, current_layer: int, row: Dict, packed_bins: List):
+    def generate_diagram(
+        self, index: int, current_layer: int, row: Dict, packed_bins: List
+    ):
         """
         Generate a visual diagram of the packing arrangement.
 
@@ -566,7 +595,7 @@ class PackagePackerFFDH:
             row (Dict): Current row of ULD data being processed.
             packed_bins (List): List of packed bin details.
         """
-        uld_size = (row['length'], row['width'])
+        uld_size = (row["length"], row["width"])
         bin_coordinates = {bin_id: (x, y, w, h) for bin_id, x, y, w, h in packed_bins}
         file_path = f"../fig/ffdh_diagram_{index}_{current_layer}.pdf"
 
@@ -588,27 +617,31 @@ class PackagePackerFFDH:
             curr_base = 0  # Tracks the current z-coordinate base for stacking
             current_layer = 0  # Tracks the number of layers used for the current ULD
 
-            while row['height'] >= self.pdf['height'].min():
+            while row["height"] >= self.pdf["height"].min():
                 current_layer += 1
                 # Initialize the packer for the current ULD dimensions
-                packer2d = FFDHPacker(row['length'], row['width'])
+                packer2d = FFDHPacker(row["length"], row["width"])
 
                 # Choose packages to fit in the current height layer
                 select_height, select_package_list = self.choose_packages(self.pdf)
-                if select_height > row['height']:
+                if select_height > row["height"]:
                     break  # No more packages can fit in this ULD
-                
+
                 selected_box_nos = [box[0] for box in select_package_list]
                 # Filter the DataFrame where 'box no' is in the selected_box_nos
-                filtered_select_df = self.pdf[self.pdf['box no'].isin(selected_box_nos)]
-                
-                while row['weight_limit'] < filtered_select_df['weight'].sum():
-                    max_weight_index = filtered_select_df['weight'].idxmax()
+                filtered_select_df = self.pdf[self.pdf["box no"].isin(selected_box_nos)]
+
+                while row["weight_limit"] < filtered_select_df["weight"].sum():
+                    max_weight_index = filtered_select_df["weight"].idxmax()
                     # Drop the row with the maximum 'Weight' using its index
                     filtered_select_df = filtered_select_df.drop(index=max_weight_index)
                 if filtered_select_df.empty:
                     break
-                select_package_list = list(filtered_select_df[['box no', 'length', 'width']].itertuples(index=False, name=None))
+                select_package_list = list(
+                    filtered_select_df[["box no", "length", "width"]].itertuples(
+                        index=False, name=None
+                    )
+                )
                 # Pack the selected packages
                 packed_bins = packer2d.pack_bins(select_package_list)
 
@@ -617,9 +650,9 @@ class PackagePackerFFDH:
 
                 # Add packed bins to the total packed bins list
                 for bin in packed_bins:
-                    box_row = self.pdf[self.pdf['box no'] == bin[0]]
+                    box_row = self.pdf[self.pdf["box no"] == bin[0]]
                     if not box_row.empty:
-                        height = box_row.iloc[0]['height']
+                        height = box_row.iloc[0]["height"]
                     self.total_packed_bins.append(
                         (
                             bin[0],  # Box identifier
@@ -634,17 +667,18 @@ class PackagePackerFFDH:
 
                 # Remove packed boxes from the package data frame
                 packed_box_nos = [box_no for box_no, _, _, _, _ in packed_bins]
-                self.pdf = self.pdf[~self.pdf['box no'].isin(packed_box_nos)]
+                self.pdf = self.pdf[~self.pdf["box no"].isin(packed_box_nos)]
 
                 # Update the height of the ULD and the base for stacking
-                row['height'] -= select_height
-                row['weight_limit'] -= filtered_select_df['weight'].sum()
+                row["height"] -= select_height
+                row["weight_limit"] -= filtered_select_df["weight"].sum()
                 curr_base += select_height
 
                 # Increment the total packed box count
                 self.total_boxes_packed += len(packed_box_nos)
 
         return self.total_packed_bins
+
 
 class PackagePackerMRA:
     def __init__(self, udf: pd.DataFrame, pdf: pd.DataFrame):
@@ -673,10 +707,10 @@ class PackagePackerMRA:
             select_height (int): The total height of the selected packages.
             select_package_list (List[Tuple[str, int, int]]): Selected packages with dimensions.
         """
-        select_height = pdf['height'].min()
-        selected_packages = pdf[pdf['height'] == select_height]
+        select_height = pdf["height"].min()
+        selected_packages = pdf[pdf["height"] == select_height]
         select_package_list = [
-            (row['box no'], row['length'], row['width'])
+            (row["box no"], row["length"], row["width"])
             for _, row in selected_packages.iterrows()
         ]
         return select_height, select_package_list
@@ -691,7 +725,7 @@ class PackagePackerMRA:
             row (Dict): Current row of ULD data being processed.
             packed_bins (List): List of packed bin details.
         """
-        uld_size = (row['length'], row['width'])
+        uld_size = (row["length"], row["width"])
         bin_coordinates = {bin_id: (x, y, w, h) for bin_id, x, y, w, h in packed_bins}
         file_path = f"../fig/mra_diagram_{index}_{current}.pdf"
 
@@ -713,28 +747,32 @@ class PackagePackerMRA:
             current = 0  # Tracks the number of layers used for the current ULD
             curr_base = 0  # Tracks the current z-coordinate base for stacking
 
-            while row['height'] >= self.pdf['height'].min():
+            while row["height"] >= self.pdf["height"].min():
                 current += 1
                 # Initialize the packer for the current ULD dimensions
-                packer2d = MRA_Packer(row['length'], row['width'])
+                packer2d = MRA_Packer(row["length"], row["width"])
 
                 # Choose packages to fit in the current height layer
                 select_height, select_package_list = self.choose_packages(self.pdf)
-                if select_height > row['height']:
+                if select_height > row["height"]:
                     break  # No more packages can fit in this ULD
-                
+
                 selected_box_nos = [box[0] for box in select_package_list]
                 # Filter the DataFrame where 'box no' is in the selected_box_nos
-                filtered_select_df = self.pdf[self.pdf['box no'].isin(selected_box_nos)]
-                
-                while row['weight_limit'] < filtered_select_df['weight'].sum():
-                    max_weight_index = filtered_select_df['weight'].idxmax()
+                filtered_select_df = self.pdf[self.pdf["box no"].isin(selected_box_nos)]
+
+                while row["weight_limit"] < filtered_select_df["weight"].sum():
+                    max_weight_index = filtered_select_df["weight"].idxmax()
                     # Drop the row with the maximum 'Weight' using its index
                     filtered_select_df = filtered_select_df.drop(index=max_weight_index)
                 if filtered_select_df.empty:
                     break
-                select_package_list = list(filtered_select_df[['box no', 'length', 'width']].itertuples(index=False, name=None))
-                
+                select_package_list = list(
+                    filtered_select_df[["box no", "length", "width"]].itertuples(
+                        index=False, name=None
+                    )
+                )
+
                 # Pack the selected packages
                 packed_bins = packer2d.pack_bins(select_package_list)
 
@@ -743,9 +781,9 @@ class PackagePackerMRA:
 
                 # Add packed bins to the total packed bins list
                 for bin in packed_bins:
-                    box_row = self.pdf[self.pdf['box no'] == bin[0]]
+                    box_row = self.pdf[self.pdf["box no"] == bin[0]]
                     if not box_row.empty:
-                        height = box_row.iloc[0]['height']
+                        height = box_row.iloc[0]["height"]
                     self.total_packed_bins.append(
                         (
                             bin[0],  # Box identifier
@@ -760,17 +798,18 @@ class PackagePackerMRA:
 
                 # Remove packed boxes from the package data frame
                 packed_box_nos = [box_no for box_no, _, _, _, _ in packed_bins]
-                self.pdf = self.pdf[~self.pdf['box no'].isin(packed_box_nos)]
+                self.pdf = self.pdf[~self.pdf["box no"].isin(packed_box_nos)]
 
                 # Update the height of the ULD and the base for stacking
-                row['height'] -= select_height
-                row['weight_limit'] -= filtered_select_df['weight'].sum()
+                row["height"] -= select_height
+                row["weight_limit"] -= filtered_select_df["weight"].sum()
                 curr_base += select_height
 
                 # Increment the total packed box count
                 self.total_boxes_packed += len(packed_box_nos)
 
         return self.total_packed_bins
+
 
 def pack_package(udf, pdf):
     # Initialize packers for each algorithm
@@ -786,73 +825,7 @@ def pack_package(udf, pdf):
     # Compare the results and choose the best one
     packed_bins = max(
         [packed_bins_nfdh, packed_bins_ffdh, packed_bins_mra],
-        key=lambda bins: len(bins)
+        key=lambda bins: len(bins),
     )
 
     return packed_bins
-
-class SliceAlgorithm(Solver):
-    def __init__(self, ulds: List[ULD], packages: List[Package]):
-        super().__init__(ulds, packages)
-        self.package_map = {}
-        self.uld_map = {}
-        package_data = [{
-            'box no': pkg.id,
-            'length': pkg.length,
-            'width': pkg.width,
-            'height': pkg.height,
-            'weight': pkg.weight,
-        } for pkg in self.packages]
-        
-        # Convert the list of dictionaries into a pandas DataFrame
-        self.package_specific_df = pd.DataFrame(package_data)
-        self.response = {}
-        
-    def remove_packed_bins(self, package_specific_df, packed_bins):
-        # Extract the 'box no' values from packed_bins (first element of each tuple)
-        packed_box_nos = [box[0] for box in packed_bins]
-        
-        # Filter out rows from the DataFrame where 'box no' is in packed_box_nos
-        updated_df = package_specific_df[~package_specific_df['box no'].isin(packed_box_nos)]
-        
-        return updated_df
-
-    async def _solve(self):
-        for uld in self.ulds:
-            uld_data = {
-                'ULD no': [uld.id],
-                'length': [uld.length],
-                'width': [uld.width],
-                'height': [uld.height],
-                'weight_limit': [uld.weight_limit]
-            }
-            # Convert the dictionary into a pandas DataFrame
-            uld_specific_df = pd.DataFrame(uld_data)
-            
-            packed_bins = pack_package(uld_specific_df, self.package_specific_df)
-            
-            self.response[uld.id] = packed_bins
-            
-            self.package_specific_df = self.remove_packed_bins(self.package_specific_df, packed_bins)
-
-    async def _get_result(self):
-        try:
-            if self.response is None:
-                raise Exception("No response from slicing algorithm can solver")
-
-            return self.response
-        except Exception as e:
-            raise Exception(f"Error getting result from slicing algorithm solver: {e}")
-
-    async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
-        return self.package_specific_df.empty
-
-    async def _parse_result(self, result: Dict[str, Any]):
-        for uld_id, packed_bins in result.items():
-            for packed_bin in packed_bins:
-                for package in self.packages:
-                    if(packed_bin[0] == package.id):
-                        package.uld_id = uld_id
-                        package.point1 = (packed_bin[1], packed_bin[2], packed_bin[3])
-                        package.point2 = (packed_bin[4], packed_bin[5], packed_bin[6])
-                        break
