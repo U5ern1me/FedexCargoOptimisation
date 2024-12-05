@@ -67,8 +67,7 @@ async def main():
         await strategy.run()
     except Exception as e:
         logging.error(f"Error in strategy: {e}")
-        print(f"Error in strategy: {e}")
-        return
+        raise e
 
     print(
         f"Solution calculated in {strategy.time_end - strategy.time_start:.2f} seconds"
