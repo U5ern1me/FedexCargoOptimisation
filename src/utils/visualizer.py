@@ -59,7 +59,7 @@ class plot_3D:
         min_corner: Tuple[int, int, int],
         max_corner: Tuple[int, int, int],
         mode: str = "EMS",
-        label: str = "box",
+        color: str = "black",
     ):
         """
         Add a box to the plot using diagonal corners.
@@ -68,22 +68,17 @@ class plot_3D:
         y = [min_corner[1], max_corner[1]]
         z = [min_corner[2], max_corner[2]]
         self.ax.bar3d(
-            x[0], y[0], z[0], x[1] - x[0], y[1] - y[0], z[1] - z[0], alpha=self.alpha
+            x[0],
+            y[0],
+            z[0],
+            x[1] - x[0],
+            y[1] - y[0],
+            z[1] - z[0],
+            alpha=self.alpha,
+            color=color,
+            edgecolor="black",
+            linewidth=0.5,
         )
-
-        if label:
-            self.ax.text(
-                (x[0] + x[1]) / 2,
-                (y[0] + y[1]) / 2,
-                (z[0] + z[1]) / 2,
-                label,
-                fontsize=12,
-                fontweight="bold",
-                color="white",
-                ha="center",
-                va="center",
-                bbox=dict(facecolor="black", edgecolor="none", alpha=1),
-            )
 
     def add_title(self, title: str):
         """
@@ -111,9 +106,9 @@ def draw(
         boxes: List of packages in the ULD.
         title: Title of the plot.
     """
-    container = plot_3D(V=bin_dimensions)
+    container = plot_3D(V=bin_dimensions, alpha=0.9)
     for box in boxes:
-        container.add_box(box[0], box[1], mode="EMS", label=box[2])
+        container.add_box(box[0], box[1], mode="EMS", color=box[2])
     container.add_title(title)
     container.show()
 
@@ -135,7 +130,7 @@ def visualize(output_path: str, input_folder: str):
             (
                 allocation[package.id]["Point 1"],
                 allocation[package.id]["Point 2"],
-                package.id,
+                "#f97316" if package.priority else "#9333ea",
             )
             for package in packages
             if allocation[package.id]["ULD Identifier"] == uld.id
