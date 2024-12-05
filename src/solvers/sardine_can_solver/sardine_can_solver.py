@@ -150,3 +150,28 @@ class SardineCanSolver(Solver):
                     y + _package["cubes"][0]["width"],
                     z + _package["cubes"][0]["height"],
                 )
+
+    async def get_packing_json(self, session: aiohttp.ClientSession = None):
+        """
+        get the packing json from sardine can solver
+
+        Returns:
+            Dict[str, Any]: packing json
+        """
+
+        response = await self._get_result(session=session)
+
+        response_json = {}
+        response_json["ulds"] = []
+
+        for _uld in response["containers"]:
+            uld_json = {}
+            _uld_id = _uld["id"]
+            uld_json["id"] = self.uld_map[_uld_id].id
+            uld_json["packages"] = []
+            for _package in _uld["assignments"]:
+                package = self.package_map[_package["piece"]]
+                uld_json["packages"].append(package.id)
+            response_json["ulds"].append(uld_json)
+
+        return response_json

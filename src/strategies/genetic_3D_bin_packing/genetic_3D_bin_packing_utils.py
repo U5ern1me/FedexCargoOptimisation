@@ -7,17 +7,130 @@ import time
 import logging
 import json
 import asyncio
-from .uld_partition_generator import *
+import aiohttp
 from solvers import solvers
+from itertools import combinations
 
 DUMP = True
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    filename="genetic_3D_bin_packing.log",
-    format="%(asctime)s - %(levelname)s - %(message)s",
-)
+
+def get_all_division_of_ulds(ulds: List[ULD], check_top: int) -> List[List[List[ULD]]]:
+    """
+    Get all possible divisions of ulds into two groups.
+
+    Args:
+        ulds: List of ULDs
+        check_top: Number of top combinations to check
+
+    Returns:
+        All possible divisions of ulds into two groups
+    """
+
+    # create a hash map to group ulds by their dimensions and weight limit
+    uld_hash_map = dict()
+    for uld in ulds:
+        hash_value = (uld.length, uld.width, uld.height, uld.weight_limit)
+        if hash_value not in uld_hash_map:
+            uld_hash_map[hash_value] = []
+
+        uld_hash_map[hash_value].append(uld.id)
+
+    # create a representation list of ulds each unique type of uld has a unique representation
+    # represation is propertional to its capacity (volume * weight limit)
+    uld_list = list((key, value) for key, value in uld_hash_map.items())
+    uld_list.sort(key=lambda x: (x[0][0] * x[0][1] * x[0][2] * x[0][3]))
+    uld_list = [value for _, value in uld_list]
+    uld_rep_list = []
+
+    for uld_rep_idx, uld_group in enumerate(uld_list):
+        for __ in range(len(uld_group)):
+            uld_rep_list.append(uld_rep_idx)
+
+    solution = []
+
+    # get all possible combinations of ulds
+    for i in range(len(ulds) + 1):
+        solution.append([])
+
+        # get all possible combinations of ulds of split size i, n - i
+        possible_combinations = combinations(uld_rep_list, i)
+        # get only the top check_top unique combinations
+        actual_combinations = sorted(
+            list(set(possible_combinations)),
+            key=lambda x: sum(x),
+            reverse=True,
+        )
+        actual_combinations = actual_combinations[:check_top]
+
+        # convert the representation list to the actual uld ids
+        for comb in actual_combinations:
+            unique_values = set(comb)
+            comb_list = []
+            for unique_value in unique_values:
+                num_ulds = comb.count(unique_value)
+                for j in range(num_ulds):
+                    comb_list.append(uld_list[unique_value][j])
+
+            # add the combination to the solution
+            solution[-1].append(comb_list)
+
+    return solution
+
+
+def split_ulds_into_two(
+    ulds: List[ULD], group_1_ids: List[int]
+) -> Tuple[List[ULD], List[ULD]]:
+    """
+    Split the uld list into two lists based on the ids.
+
+    Args:
+        ulds: List of ULDs
+        group_1_ids: List of ids of the first group
+
+    Returns:
+        group_1, group_2
+    """
+    group_1 = [uld for uld in ulds if uld.id in group_1_ids]
+    group_2 = [uld for uld in ulds if uld.id not in group_1_ids]
+    return group_1, group_2
+
+
+def virtual_fit_priority(
+    priority_packages: List[Package], uld_group_1: List[ULD]
+) -> bool:
+    """
+    Check if the priority packages can fit in the uld group 1 only by means of volume and weight.
+
+    Args:
+        priority_packages: List of priority packages
+        uld_group_1: List of ULDs to fit the priority packages
+    """
+    PACKING_EFFICIENCY_THRESHOLD = 1
+
+    if len(uld_group_1) == 0:
+        return False
+
+    total_weight = sum([package.weight for package in priority_packages])
+    total_volume = sum(
+        [
+            package.length * package.width * package.height
+            for package in priority_packages
+        ]
+    )
+
+    total_capacity = sum([uld.weight_limit for uld in uld_group_1])
+    total_volume_capacity = sum(
+        [uld.length * uld.width * uld.height for uld in uld_group_1]
+    )
+
+    if total_weight / total_capacity > PACKING_EFFICIENCY_THRESHOLD:
+        return False
+
+    if total_volume / total_volume_capacity > PACKING_EFFICIENCY_THRESHOLD:
+        return False
+
+    return True
+
 
 class Genetic3DBinPacking:
     def __init__(
@@ -94,19 +207,26 @@ class Genetic3DBinPacking:
 
         uld_splits_arr = get_all_division_of_ulds(self.ulds, 1)
 
-        for uld_split in uld_splits_arr:
-            uld_group_1, uld_group_2 = split_ulds_into_two(self.ulds, uld_split[0])
-            if virtual_fit_priority(self.priority_packages, uld_group_1):
-                async with self.solver(uld_group_1, self.priority_packages) as solver:
-                    await solver.solve()
-                    solution = await solver._get_result()
-                is_valid, _ = await self.check_validity(solution)
-                if is_valid:
-                    return uld_group_1, uld_group_2
+        async with aiohttp.ClientSession() as session:
+            for uld_split in uld_splits_arr:
+                uld_group_1, uld_group_2 = split_ulds_into_two(self.ulds, uld_split[0])
+                if virtual_fit_priority(self.priority_packages, uld_group_1):
+                    async with self.solver(
+                        uld_group_1, self.priority_packages
+                    ) as solver:
+                        await solver.solve(session=session)
+                        # solution = await solver._get_result(session=session)
+                        solution = await solver.get_packing_json(session=session)
+                    is_valid, _ = await self.check_validity(solution)
+                    if is_valid:
+                        return uld_group_1, uld_group_2
 
     async def adjust_individual(self, individual: np.ndarray) -> np.ndarray:
         """
         Adjust an individual's genes to satisfy the constraints on gene counts.
+
+        Returns:
+            np.ndarray: Adjusted individual
         """
         assert len(individual) == self.num_genes
 
@@ -163,9 +283,8 @@ class Genetic3DBinPacking:
         """
         economy_packages_in_priority_ulds: List[str] = []
         cnt_priority_packed: int = 0
-        for _uld in packing.get("bins_packed", []):
-            for package in _uld.get("items", []):
-                package_id = package["id"]
+        for _uld in packing.get("ulds", []):
+            for package_id in _uld.get("packages", []):
                 if self.package_map[package_id].priority == 1:
                     cnt_priority_packed += 1
                 else:
@@ -176,7 +295,12 @@ class Genetic3DBinPacking:
         else:
             return True, economy_packages_in_priority_ulds
 
-    async def rectify_individual(self, individual: np.ndarray, priority_ulds: np.ndarray) -> np.ndarray:
+    async def rectify_individual(
+        self,
+        individual: np.ndarray,
+        priority_ulds: np.ndarray,
+        session: aiohttp.ClientSession,
+    ) -> np.ndarray:
         """
         Rectify an individual's genes to ensure valid packing.
         """
@@ -185,11 +309,13 @@ class Genetic3DBinPacking:
         # Sort economy packages based on delay_cost/volume ratio
         economy_sorted = sorted(
             economy_to_pack,
-            key=lambda x: x.delay_cost / (x.length * x.width * x.height)
+            key=lambda x: x.delay_cost / (x.length * x.width * x.height),
         )
 
         pos_economy_id: set = set((i, pkg.id) for i, pkg in enumerate(economy_sorted))
-        id_to_index: Dict[str, int] = {pkg.id: i for i, pkg in enumerate(economy_sorted)}
+        id_to_index: Dict[str, int] = {
+            pkg.id: i for i, pkg in enumerate(economy_sorted)
+        }
 
         num_economy = len(economy_sorted)
 
@@ -201,11 +327,14 @@ class Genetic3DBinPacking:
         while lower_bound <= upper_bound:
             mid = (lower_bound + upper_bound) // 2
             packages_to_pack = np.array(economy_sorted[-mid:])
-            packages_to_pack = np.concatenate((packages_to_pack, self.priority_packages),axis=0)
+            packages_to_pack = np.concatenate(
+                (packages_to_pack, self.priority_packages), axis=0
+            )
 
             async with self.solver(priority_ulds, packages_to_pack) as solver:
-                await solver.solve()
-                solution = await solver._get_result()
+                await solver.solve(session=session)
+                # solution = await solver._get_result(session=session)
+                solution = await solver.get_packing_json(session=session)
 
             is_valid, packed = await self.check_validity(solution)
 
@@ -243,13 +372,17 @@ class Genetic3DBinPacking:
         cost_of_fitted: int = np.sum(
             [pkg.delay_cost for pkg in self.economy_packages[individual == 2]]
         )
-        for _uld in packing.get("bins_packed", []):
-            for package in _uld.get("items", []):
-                cost_of_fitted += self.package_map[package["id"]].delay_cost
+        for _uld in packing.get("ulds", []):
+            for package_id in _uld.get("packages", []):
+                cost_of_fitted += self.package_map[package_id].delay_cost
         return self.total_economic_cost - cost_of_fitted
 
     async def evaluate_individual_fitness(
-        self, individual_index: int, individual: np.ndarray, economy_ulds: np.ndarray
+        self,
+        individual_index: int,
+        individual: np.ndarray,
+        economy_ulds: np.ndarray,
+        session: aiohttp.ClientSession,
     ) -> Tuple[int, dict]:
         """
         Evaluate the fitness of a single individual.
@@ -259,8 +392,9 @@ class Genetic3DBinPacking:
         """
         chosen_packages = self.economy_packages[individual == 1]
         async with self.solver(economy_ulds, chosen_packages) as solver:
-            await solver.solve()
-            solution = await solver._get_result()
+            await solver.solve(session=session)
+            # solution = await solver._get_result(session=session)
+            solution = await solver.get_packing_json(session=session)
         cost = await self.calculate_cost(individual, solution)
         logging.info(f"Individual: {individual_index}, Cost: {cost}")
         return (cost, solution)
@@ -274,18 +408,20 @@ class Genetic3DBinPacking:
         Returns:
             Tuple[np.ndarray, List[dict]]: (Costs Array, Solutions List)
         """
-        tasks = [
-            self.evaluate_individual_fitness(i, individual, economy_ulds)
-            for i, individual in enumerate(population)
-        ]
-        fitness_list = await asyncio.gather(*tasks)
+        async with aiohttp.ClientSession() as session:
+            tasks = [
+                self.evaluate_individual_fitness(
+                    i, individual, economy_ulds, session=session
+                )
+                for i, individual in enumerate(population)
+            ]
+            fitness_list = await asyncio.gather(*tasks)
+
         costs = np.array([cost for cost, _ in fitness_list])
         solutions = [solution for _, solution in fitness_list]
         return costs, solutions
 
-    async def crossover(
-        self, parent1: np.ndarray, parent2: np.ndarray
-    ) -> np.ndarray:
+    async def crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> np.ndarray:
         """
         Perform crossover between two parents to produce an offspring.
         """
@@ -300,7 +436,7 @@ class Genetic3DBinPacking:
         Perform mating to produce offspring based on fitness.
         """
         # Calculate selection probabilities
-        with np.errstate(divide='ignore'):
+        with np.errstate(divide="ignore"):
             selection_probabilities = 1 / (fitness_costs - self.best_score)
             selection_probabilities = np.where(
                 fitness_costs > self.best_score, selection_probabilities, 1e6
@@ -311,10 +447,17 @@ class Genetic3DBinPacking:
         selection_probabilities /= sum_prob
 
         # Select parent indices for each offspring
-        parent_indices = np.array([
-            np.random.choice(self.num_individuals, size=2, replace=False, p=selection_probabilities)
-            for _ in range(self.num_individuals)
-        ])
+        parent_indices = np.array(
+            [
+                np.random.choice(
+                    self.num_individuals,
+                    size=2,
+                    replace=False,
+                    p=selection_probabilities,
+                )
+                for _ in range(self.num_individuals)
+            ]
+        )
 
         # Create a list of crossover tasks
         tasks = [
@@ -347,9 +490,7 @@ class Genetic3DBinPacking:
                 mutated_individual[gene_idx] = np.random.choice([0, 1])
         return mutated_individual
 
-    async def mutate(
-        self, population: np.ndarray
-    ) -> np.ndarray:
+    async def mutate(self, population: np.ndarray) -> np.ndarray:
         """
         Perform mutation on the entire population.
         """
@@ -367,9 +508,7 @@ class Genetic3DBinPacking:
         mutated_population = await asyncio.gather(*tasks)
         return np.array(mutated_population)
 
-    async def fit(
-        self, patience: int, verbose: bool = True
-    ):
+    async def fit(self, patience: int, verbose: bool = True):
         """
         Run the genetic algorithm to find the best packing solution.
         """
@@ -384,12 +523,18 @@ class Genetic3DBinPacking:
         population = np.array(population)
 
         # Rectify all individuals concurrently
-        tasks = [self.rectify_individual(individual, priority_ulds) for individual in population]
-        population = await asyncio.gather(*tasks)
-        population = np.array(population)
+        async with aiohttp.ClientSession() as session:
+            tasks = [
+                self.rectify_individual(individual, priority_ulds, session=session)
+                for individual in population
+            ]
+            population = await asyncio.gather(*tasks)
+            population = np.array(population)
 
         # Calculate initial fitness
-        fitness_costs, fitness_solutions = await self.calculate_fitness(population, economy_ulds)
+        fitness_costs, fitness_solutions = await self.calculate_fitness(
+            population, economy_ulds
+        )
 
         # Sort population based on fitness (ascending cost)
         sorted_indices = np.argsort(fitness_costs)
@@ -428,13 +573,17 @@ class Genetic3DBinPacking:
             mutants = np.array(mutants)
 
             # Rectify all mutants concurrently
-            tasks = [self.rectify_individual(individual, priority_ulds) for individual in mutants]
-            mutants = await asyncio.gather(*tasks)
-            mutants = np.array(mutants)
+            async with aiohttp.ClientSession() as session:
+                tasks = [
+                    self.rectify_individual(individual, priority_ulds, session=session)
+                    for individual in mutants
+                ]
+                mutants = await asyncio.gather(*tasks)
+                mutants = np.array(mutants)
 
             # Calculate fitness for mutants
-            fitness_costs_mutants, fitness_solutions_mutants = await self.calculate_fitness(
-                mutants, economy_ulds
+            fitness_costs_mutants, fitness_solutions_mutants = (
+                await self.calculate_fitness(mutants, economy_ulds)
             )
 
             # Sort mutants based on fitness (ascending cost)
@@ -465,5 +614,3 @@ class Genetic3DBinPacking:
                 logging.info(
                     f"Generation: {generation}, Best Score: {self.best_fitness}"
                 )
-
-
