@@ -144,11 +144,13 @@ class Genetic3DBinPacking:
         max_1: int = 5,
         min_2: int = 1,
         max_2: int = 5,
-        solver: str = "threeD_bin_packing",
+        solver: str = "sardine_can",
         eliteCProb: float = 0.7,
         best_score: int = 0,
         seed: Optional[int] = None,
     ):
+        print("IN INIT")
+
         self.packages: List[Package] = inputs["packages"]
         self.ulds: List[ULD] = inputs["ulds"]
         self.num_generations: int = num_generations
@@ -184,6 +186,8 @@ class Genetic3DBinPacking:
             package.delay_cost for package in self.economy_packages
         )
 
+        print("HELLOOOOOOOOOOO")
+
         self.mutation_bracket_size: int = mutation_bracket_size
         self.eliteCProb: float = eliteCProb
 
@@ -203,6 +207,8 @@ class Genetic3DBinPacking:
         random.seed(self.seed)
         np.random.seed(self.seed)
 
+        print("END OF INIT")
+
     async def get_best_ulds(self) -> List[str]:
 
         uld_splits_arr = get_all_division_of_ulds(self.ulds, 1)
@@ -211,12 +217,10 @@ class Genetic3DBinPacking:
             for uld_split in uld_splits_arr:
                 uld_group_1, uld_group_2 = split_ulds_into_two(self.ulds, uld_split[0])
                 if virtual_fit_priority(self.priority_packages, uld_group_1):
-                    async with self.solver(
-                        uld_group_1, self.priority_packages
-                    ) as solver:
-                        await solver.solve(session=session)
-                        # solution = await solver._get_result(session=session)
-                        solution = await solver.get_packing_json(session=session)
+                    solver = self.solver(uld_group_1, self.priority_packages)
+                    await solver.solve(session=session)
+                    # solution = await solver._get_result(session=session)
+                    solution = await solver.get_packing_json(session=session)
                     is_valid, _ = await self.check_validity(solution)
                     if is_valid:
                         return uld_group_1, uld_group_2
@@ -331,10 +335,10 @@ class Genetic3DBinPacking:
                 (packages_to_pack, self.priority_packages), axis=0
             )
 
-            async with self.solver(priority_ulds, packages_to_pack) as solver:
-                await solver.solve(session=session)
-                # solution = await solver._get_result(session=session)
-                solution = await solver.get_packing_json(session=session)
+            solver = self.solver(priority_ulds, packages_to_pack)
+            await solver.solve(session=session)
+            # solution = await solver._get_result(session=session)
+            solution = await solver.get_packing_json(session=session)
 
             is_valid, packed = await self.check_validity(solution)
 
@@ -391,10 +395,10 @@ class Genetic3DBinPacking:
             Tuple[int, dict]: (Cost, Packing Solution)
         """
         chosen_packages = self.economy_packages[individual == 1]
-        async with self.solver(economy_ulds, chosen_packages) as solver:
-            await solver.solve(session=session)
-            # solution = await solver._get_result(session=session)
-            solution = await solver.get_packing_json(session=session)
+        solver = self.solver(economy_ulds, chosen_packages)
+        await solver.solve(session=session)
+        # solution = await solver._get_result(session=session)
+        solution = await solver.get_packing_json(session=session)
         cost = await self.calculate_cost(individual, solution)
         logging.info(f"Individual: {individual_index}, Cost: {cost}")
         return (cost, solution)
@@ -514,8 +518,17 @@ class Genetic3DBinPacking:
         """
         # Initialize population with random genes (0, 1, 2)
         population = np.random.randint(3, size=(self.num_individuals, self.num_genes))
+
+        if verbose:
+            logging.info(f"Population: {len(population)}")
+            logging.info(f"Solver: {self.solver.__name__}")
         # population = np.load("population.npy")
         priority_ulds, economy_ulds = await self.get_best_ulds()
+
+        if verbose:
+            logging.info(f"Priority ULDs: {len(priority_ulds)}")
+            logging.info(f"Economy ULDs: {len(economy_ulds)}")
+            logging.info(f"Population: {len(population)}")
 
         # Adjust all individuals concurrently
         tasks = [self.adjust_individual(individual) for individual in population]
