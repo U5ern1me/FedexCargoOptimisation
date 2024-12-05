@@ -7,7 +7,8 @@ import time
 import logging
 import json
 import asyncio
-from solvers.threeD_bin_packing_solver.threeD_bin_packing_solver import ThreeDBinPackingSolver
+from .uld_partition_generator import *
+from solvers import solvers
 
 DUMP = True
 
@@ -18,12 +19,11 @@ logging.basicConfig(
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
-
 class Genetic3DBinPacking:
     def __init__(
         self,
         inputs: Dict[str, Any],
-        uld_map_for_priority: Dict[str, int],
+        # uld_map_for_priority: Dict[str, int],
         num_generations: int = 200,
         num_individuals: int = 120,
         mutation_bracket_size: int = 5,
@@ -31,6 +31,7 @@ class Genetic3DBinPacking:
         max_1: int = 5,
         min_2: int = 1,
         max_2: int = 5,
+        solver: str = "threeD_bin_packing",
         eliteCProb: float = 0.7,
         best_score: int = 0,
         seed: Optional[int] = None,
@@ -55,15 +56,7 @@ class Genetic3DBinPacking:
         self.priority_packages = np.array(self.priority_packages)
         self.economy_packages = np.array(self.economy_packages)
 
-        # Separate priority and economy ULDs
-        self.economy_ulds: List[ULD] = []
-        self.priority_ulds: List[ULD] = []
-        for uld in self.ulds:
-            if uld_map_for_priority.get(uld.id, 0) == 0:
-                self.economy_ulds.append(uld)
-            else:
-                self.priority_ulds.append(uld)
-        self.economy_ulds = np.array(self.economy_ulds)
+        self.solver = solvers[solver]
 
         # Mapping from package ID to index for fast access
         self.package_id_to_index: Dict[str, int] = {
@@ -96,6 +89,20 @@ class Genetic3DBinPacking:
 
         random.seed(self.seed)
         np.random.seed(self.seed)
+
+    async def get_best_ulds(self) -> List[str]:
+
+        uld_splits_arr = get_all_division_of_ulds(self.ulds, 1)
+
+        for uld_split in uld_splits_arr:
+            uld_group_1, uld_group_2 = split_ulds_into_two(self.ulds, uld_split[0])
+            if virtual_fit_priority(self.priority_packages, uld_group_1):
+                async with self.solver(uld_group_1, self.priority_packages) as solver:
+                    await solver.solve()
+                    solution = await solver._get_result()
+                is_valid, _ = await self.check_validity(solution)
+                if is_valid:
+                    return uld_group_1, uld_group_2
 
     async def adjust_individual(self, individual: np.ndarray) -> np.ndarray:
         """
@@ -169,7 +176,7 @@ class Genetic3DBinPacking:
         else:
             return True, economy_packages_in_priority_ulds
 
-    async def rectify_individual(self, individual: np.ndarray) -> np.ndarray:
+    async def rectify_individual(self, individual: np.ndarray, priority_ulds: np.ndarray) -> np.ndarray:
         """
         Rectify an individual's genes to ensure valid packing.
         """
@@ -196,7 +203,7 @@ class Genetic3DBinPacking:
             packages_to_pack = np.array(economy_sorted[-mid:])
             packages_to_pack = np.concatenate((packages_to_pack, self.priority_packages),axis=0)
 
-            async with ThreeDBinPackingSolver(self.priority_ulds, packages_to_pack) as solver:
+            async with self.solver(priority_ulds, packages_to_pack) as solver:
                 await solver.solve()
                 solution = await solver._get_result()
 
@@ -242,7 +249,7 @@ class Genetic3DBinPacking:
         return self.total_economic_cost - cost_of_fitted
 
     async def evaluate_individual_fitness(
-        self, individual_index: int, individual: np.ndarray
+        self, individual_index: int, individual: np.ndarray, economy_ulds: np.ndarray
     ) -> Tuple[int, dict]:
         """
         Evaluate the fitness of a single individual.
@@ -251,7 +258,7 @@ class Genetic3DBinPacking:
             Tuple[int, dict]: (Cost, Packing Solution)
         """
         chosen_packages = self.economy_packages[individual == 1]
-        async with ThreeDBinPackingSolver(self.economy_ulds, chosen_packages) as solver:
+        async with self.solver(economy_ulds, chosen_packages) as solver:
             await solver.solve()
             solution = await solver._get_result()
         cost = await self.calculate_cost(individual, solution)
@@ -259,7 +266,7 @@ class Genetic3DBinPacking:
         return (cost, solution)
 
     async def calculate_fitness(
-        self, population: np.ndarray
+        self, population: np.ndarray, economy_ulds: np.ndarray
     ) -> Tuple[np.ndarray, List[dict]]:
         """
         Calculate fitness for the entire population.
@@ -268,7 +275,7 @@ class Genetic3DBinPacking:
             Tuple[np.ndarray, List[dict]]: (Costs Array, Solutions List)
         """
         tasks = [
-            self.evaluate_individual_fitness(i, individual)
+            self.evaluate_individual_fitness(i, individual, economy_ulds)
             for i, individual in enumerate(population)
         ]
         fitness_list = await asyncio.gather(*tasks)
@@ -368,6 +375,8 @@ class Genetic3DBinPacking:
         """
         # Initialize population with random genes (0, 1, 2)
         population = np.random.randint(3, size=(self.num_individuals, self.num_genes))
+        # population = np.load("population.npy")
+        priority_ulds, economy_ulds = await self.get_best_ulds()
 
         # Adjust all individuals concurrently
         tasks = [self.adjust_individual(individual) for individual in population]
@@ -375,12 +384,12 @@ class Genetic3DBinPacking:
         population = np.array(population)
 
         # Rectify all individuals concurrently
-        tasks = [self.rectify_individual(individual) for individual in population]
+        tasks = [self.rectify_individual(individual, priority_ulds) for individual in population]
         population = await asyncio.gather(*tasks)
         population = np.array(population)
 
         # Calculate initial fitness
-        fitness_costs, fitness_solutions = await self.calculate_fitness(population)
+        fitness_costs, fitness_solutions = await self.calculate_fitness(population, economy_ulds)
 
         # Sort population based on fitness (ascending cost)
         sorted_indices = np.argsort(fitness_costs)
@@ -419,13 +428,13 @@ class Genetic3DBinPacking:
             mutants = np.array(mutants)
 
             # Rectify all mutants concurrently
-            tasks = [self.rectify_individual(individual) for individual in mutants]
+            tasks = [self.rectify_individual(individual, priority_ulds) for individual in mutants]
             mutants = await asyncio.gather(*tasks)
             mutants = np.array(mutants)
 
             # Calculate fitness for mutants
             fitness_costs_mutants, fitness_solutions_mutants = await self.calculate_fitness(
-                mutants
+                mutants, economy_ulds
             )
 
             # Sort mutants based on fitness (ascending cost)

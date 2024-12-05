@@ -18,7 +18,6 @@ class Genetic3DBinPackingStrategy(Strategy):
         
         model = Genetic3DBinPacking(
             inputs,
-            uld_map_for_priority=config["uld map for priority"],
             num_generations=config["number of generations"],
             num_individuals=config["number of individuals"],
             mutation_bracket_size=config["mutation bracket size"],
@@ -26,6 +25,7 @@ class Genetic3DBinPackingStrategy(Strategy):
             max_1=config["max 1"],
             min_2=config["min 2"],
             max_2=config["max 2"],
+            solver = config["solver"],
             eliteCProb=config["probability of choosing elite gene"],
         )
         
