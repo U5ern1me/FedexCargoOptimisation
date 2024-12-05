@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+import aiohttp
+
 # typing
 from typing import List, Dict, Any
 from models.uld import ULD
@@ -18,14 +20,14 @@ class Solver(ABC):
         self.only_check_fits = False
 
     @abstractmethod
-    async def _solve(self):
+    async def _solve(self, session: aiohttp.ClientSession = None):
         """
         Solve the problem
         """
         pass
 
     @abstractmethod
-    async def _get_result(self):
+    async def _get_result(self, session: aiohttp.ClientSession = None):
         """
         Get the result of the solving process
         """
@@ -45,17 +47,20 @@ class Solver(ABC):
         """
         pass
 
-    async def solve(self, only_check_fits: bool = False):
+    async def solve(
+        self, only_check_fits: bool = False, session: aiohttp.ClientSession = None
+    ):
         """
         Start the solving process
 
         Args:
             only_check_fits: If True, only check if the packages fit in the ULDs (does not update the Package data)
+            session: aiohttp.ClientSession
         """
 
         self.only_check_fits = only_check_fits
 
-        await self._solve()
+        await self._solve(session=session)
 
     def check_all_fit(self) -> bool:
         """
@@ -67,12 +72,12 @@ class Solver(ABC):
 
         return True
 
-    async def get_fit(self) -> bool:
+    async def get_fit(self, session: aiohttp.ClientSession = None) -> bool:
         """
         Get the result of the solving process
         """
 
-        result = await self._get_result()
+        result = await self._get_result(session=session)
 
         if self.only_check_fits:
             valid = await self._only_check_fits(result)

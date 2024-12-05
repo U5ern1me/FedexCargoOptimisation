@@ -3,8 +3,9 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import requests
-
+import asyncio
+import aiohttp
+import random
 from solvers.solver import Solver
 from utils.io import load_config
 
@@ -65,7 +66,25 @@ class ThreeDBinPackingSolver(Solver):
             "q": 1,
         }
 
-    async def _solve(self):
+    async def _solve_with_retry(
+        self, session: aiohttp.ClientSession = None, max_retries: int = 3
+    ):
+        retries = 0
+        while retries < max_retries:
+            try:
+                await self._send_request(session=session)
+                return
+            except Exception as e:
+                if retries < max_retries - 1:
+                    backoff_time = random.uniform(
+                        2**retries, 2 ** (retries + 1)
+                    )  # Exponential backoff
+                    await asyncio.sleep(backoff_time)
+                    retries += 1
+                else:
+                    raise e
+
+    async def _send_request(self, session: aiohttp.ClientSession = None):
         headers = {
             "Accept": "application/json",
         }
@@ -84,16 +103,41 @@ class ThreeDBinPackingSolver(Solver):
             "params": params,
         }
 
-        self.response = requests.post(request_url, headers=headers, json=request_body)
+        try:
+            async with session.post(
+                request_url, headers=headers, json=request_body
+            ) as response:
+                if response.status != 200:
+                    res_text = await response.text()
+                    raise Exception(res_text)
 
-    async def _get_result(self):
+                res_json = await response.json()
+
+                if res_json["response"]["status"] == -1:
+                    raise Exception(res_json["response"]["errors"][0]["message"])
+
+                self.response = res_json["response"]
+
+        except Exception as e:
+            raise Exception(f"API error with 3D bin packing solver: {e}")
+
+    async def _solve(self, session: aiohttp.ClientSession = None):
+        await self._solve_with_retry(session=session, max_retries=3)
+
+    async def _get_result(self, session: aiohttp.ClientSession = None):
         try:
             if self.response is None:
                 raise Exception("No response from 3D bin packing solver")
 
-            return self.response.json()["response"]
+            response = self.response
+
+            if "errors" in response:
+                raise Exception("API access was locked out.")
+
+            return response
+
         except Exception as e:
-            raise Exception(f"Error getting result from 3D bin packing solver: {e}")
+            raise Exception(f"API error with 3D bin packing solver: {e}")
 
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
@@ -109,7 +153,7 @@ class ThreeDBinPackingSolver(Solver):
 
         for _uld in result["bins_packed"]:
             for package in _uld["items"]:
-                uld_id= _uld["bin_data"]["id"]
+                uld_id = _uld["bin_data"]["id"]
                 if uld_id not in uld_package_map:
                     uld_package_map[uld_id] = []
 
@@ -132,33 +176,55 @@ class ThreeDBinPackingSolver(Solver):
 
                 for j in range(i + 1, len(packages)):
                     x1_min, x1_max = min(
-                        packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"]
-                    ), max(packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"])
+                        packages[i]["coordinates"]["x1"],
+                        packages[i]["coordinates"]["x2"],
+                    ), max(
+                        packages[i]["coordinates"]["x1"],
+                        packages[i]["coordinates"]["x2"],
+                    )
                     y1_min, y1_max = min(
-                        packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"]
-                    ), max(packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"])
+                        packages[i]["coordinates"]["y1"],
+                        packages[i]["coordinates"]["y2"],
+                    ), max(
+                        packages[i]["coordinates"]["y1"],
+                        packages[i]["coordinates"]["y2"],
+                    )
                     z1_min, z1_max = min(
-                        packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"]
-                    ), max(packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"])
+                        packages[i]["coordinates"]["z1"],
+                        packages[i]["coordinates"]["z2"],
+                    ), max(
+                        packages[i]["coordinates"]["z1"],
+                        packages[i]["coordinates"]["z2"],
+                    )
 
                     x2_min, x2_max = min(
-                        packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"]
-                    ), max(packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"])
+                        packages[j]["coordinates"]["x1"],
+                        packages[j]["coordinates"]["x2"],
+                    ), max(
+                        packages[j]["coordinates"]["x1"],
+                        packages[j]["coordinates"]["x2"],
+                    )
                     y2_min, y2_max = min(
-                        packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"]
-                    ), max(packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"])
+                        packages[j]["coordinates"]["y1"],
+                        packages[j]["coordinates"]["y2"],
+                    ), max(
+                        packages[j]["coordinates"]["y1"],
+                        packages[j]["coordinates"]["y2"],
+                    )
                     z2_min, z2_max = min(
-                        packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"]
-                    ), max(packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"])
+                        packages[j]["coordinates"]["z1"],
+                        packages[j]["coordinates"]["z2"],
+                    ), max(
+                        packages[j]["coordinates"]["z1"],
+                        packages[j]["coordinates"]["z2"],
+                    )
 
                     x_overlap = max(0, min(x1_max, x2_max) - max(x1_min, x2_min))
                     y_overlap = max(0, min(y1_max, y2_max) - max(y1_min, y2_min))
                     z_overlap = max(0, min(z1_max, z2_max) - max(z1_min, z2_min))
 
                     if x_overlap > 0 and y_overlap > 0 and z_overlap > 0:
-                        self.error = (
-                            f"Packages {packages[i]['id']} and {packages[j]['id']} overlap"
-                        )
+                        self.error = f"Packages {packages[i]['id']} and {packages[j]['id']} overlap"
                         return False
 
         return True
