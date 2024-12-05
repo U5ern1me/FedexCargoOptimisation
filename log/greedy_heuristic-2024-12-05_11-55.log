@@ -1,0 +1,99 @@
+2024-12-05 11:55:23,874 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 11:55:23,875 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 11:55:23,875 - INFO - using solver: ThreeDBinPackingSolver
+2024-12-05 11:55:23,875 - INFO - Priority packages: 103
+2024-12-05 11:55:23,875 - INFO - Economic packages: 297
+2024-12-05 11:55:23,875 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 11:55:23,875 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 11:55:23,875 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 11:55:23,875 - INFO - Checking 0 ULDs
+2024-12-05 11:55:23,876 - INFO - Checking 1 ULDs
+2024-12-05 11:55:23,876 - INFO - Checking 2 ULDs
+2024-12-05 11:55:23,876 - INFO - Checking 3 ULDs
+2024-12-05 11:55:23,876 - INFO - Found 1 valid ULD splits
+2024-12-05 11:55:23,876 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 11:56:17,280 - INFO - Found split 1: 45
+2024-12-05 11:56:33,287 - INFO - Found split 2: 100
+2024-12-05 11:56:33,287 - INFO - Found local best split: (45, 100)
+2024-12-05 11:56:33,287 - INFO - Current best split: 28552
+2024-12-05 11:56:33,288 - INFO - Checking 4 ULDs
+2024-12-05 11:56:33,288 - INFO - Found 1 valid ULD splits
+2024-12-05 11:56:33,288 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 11:58:04,916 - INFO - Found split 1: 92
+2024-12-05 11:58:11,640 - INFO - Found split 2: 47
+2024-12-05 11:58:11,641 - INFO - Found local best split: (92, 47)
+2024-12-05 11:58:11,641 - INFO - Current best split: 28552
+2024-12-05 11:58:11,641 - INFO - Checking 5 ULDs
+2024-12-05 11:58:11,641 - INFO - Found 1 valid ULD splits
+2024-12-05 11:58:11,641 - INFO - Trying to fit priority and economic packages in ULDS: U1 U3 U4 U5 U6 
+2024-12-05 12:12:50,825 - INFO - Found split 1: 121
+2024-12-05 12:12:58,603 - INFO - Found split 2: 21
+2024-12-05 12:12:58,604 - INFO - Found local best split: (121, 21)
+2024-12-05 12:12:58,604 - INFO - Current best split: 28552
+2024-12-05 12:12:58,604 - INFO - Remaining packages: 152
+2024-12-05 12:12:58,604 - INFO - Checking package 0 of 65 packages
+2024-12-05 12:13:17,548 - INFO - Checking package 1 of 65 packages
+2024-12-05 12:13:44,574 - INFO - Checking package 2 of 65 packages
+2024-12-05 12:14:16,421 - INFO - Checking package 3 of 65 packages
+2024-12-05 12:14:52,981 - INFO - Checking package 4 of 65 packages
+2024-12-05 12:15:23,543 - INFO - Checking package 5 of 65 packages
+2024-12-05 12:15:54,376 - INFO - Checking package 6 of 65 packages
+2024-12-05 12:16:32,590 - INFO - Checking package 7 of 65 packages
+2024-12-05 12:16:38,768 - INFO - Checking package 8 of 65 packages
+2024-12-05 12:17:32,836 - INFO - Checking package 9 of 65 packages
+2024-12-05 12:18:06,636 - INFO - Checking package 10 of 65 packages
+2024-12-05 12:18:54,146 - INFO - Checking package 11 of 65 packages
+2024-12-05 12:19:06,178 - INFO - Checking package 12 of 65 packages
+2024-12-05 12:19:22,365 - INFO - Checking package 13 of 65 packages
+2024-12-05 12:19:33,462 - INFO - Checking package 14 of 65 packages
+2024-12-05 12:19:39,611 - INFO - Checking package 15 of 65 packages
+2024-12-05 12:19:45,653 - INFO - Checking package 16 of 65 packages
+2024-12-05 12:19:53,229 - INFO - Checking package 17 of 65 packages
+2024-12-05 12:19:59,268 - INFO - Checking package 18 of 65 packages
+2024-12-05 12:20:06,455 - INFO - Checking package 19 of 65 packages
+2024-12-05 12:20:13,096 - INFO - Checking package 20 of 65 packages
+2024-12-05 12:20:22,213 - INFO - Checking package 21 of 65 packages
+2024-12-05 12:20:48,724 - INFO - Checking package 22 of 65 packages
+2024-12-05 12:21:21,754 - INFO - Checking package 23 of 65 packages
+2024-12-05 12:21:43,301 - INFO - Checking package 24 of 65 packages
+2024-12-05 12:21:56,832 - INFO - Checking package 25 of 65 packages
+2024-12-05 12:22:08,509 - INFO - Checking package 26 of 65 packages
+2024-12-05 12:22:39,850 - INFO - Checking package 27 of 65 packages
+2024-12-05 12:23:28,677 - INFO - Checking package 28 of 65 packages
+2024-12-05 12:24:12,000 - INFO - Checking package 29 of 65 packages
+2024-12-05 12:24:22,651 - INFO - Checking package 30 of 65 packages
+2024-12-05 12:25:08,429 - INFO - Checking package 31 of 65 packages
+2024-12-05 12:25:49,464 - INFO - Checking package 32 of 65 packages
+2024-12-05 12:25:55,526 - INFO - Checking package 33 of 65 packages
+2024-12-05 12:26:01,772 - INFO - Checking package 34 of 65 packages
+2024-12-05 12:26:41,726 - INFO - Checking package 35 of 65 packages
+2024-12-05 12:27:38,857 - INFO - Checking package 36 of 65 packages
+2024-12-05 12:28:20,336 - INFO - Checking package 37 of 65 packages
+2024-12-05 12:28:40,196 - INFO - Checking package 38 of 65 packages
+2024-12-05 12:29:29,445 - INFO - Checking package 39 of 65 packages
+2024-12-05 12:30:34,780 - INFO - Checking package 40 of 65 packages
+2024-12-05 12:31:33,354 - INFO - Checking package 41 of 65 packages
+2024-12-05 12:31:57,428 - INFO - Checking package 42 of 65 packages
+2024-12-05 12:32:35,619 - INFO - Checking package 43 of 65 packages
+2024-12-05 12:32:42,478 - INFO - Checking package 44 of 65 packages
+2024-12-05 12:33:21,283 - INFO - Checking package 45 of 65 packages
+2024-12-05 12:34:13,799 - INFO - Checking package 46 of 65 packages
+2024-12-05 12:35:08,509 - INFO - Checking package 47 of 65 packages
+2024-12-05 12:35:16,745 - INFO - Checking package 48 of 65 packages
+2024-12-05 12:35:56,740 - INFO - Checking package 49 of 65 packages
+2024-12-05 12:36:02,877 - INFO - Checking package 50 of 65 packages
+2024-12-05 12:37:01,661 - INFO - Checking package 51 of 65 packages
+2024-12-05 12:38:05,257 - INFO - Checking package 52 of 65 packages
+2024-12-05 12:38:35,681 - INFO - Checking package 53 of 65 packages
+2024-12-05 12:39:15,083 - INFO - Checking package 54 of 65 packages
+2024-12-05 12:39:36,183 - INFO - Checking package 55 of 65 packages
+2024-12-05 12:40:11,410 - INFO - Checking package 56 of 65 packages
+2024-12-05 12:41:32,814 - INFO - Checking package 57 of 65 packages
+2024-12-05 12:41:44,699 - INFO - Checking package 58 of 65 packages
+2024-12-05 12:42:25,491 - INFO - Checking package 59 of 65 packages
+2024-12-05 12:42:58,041 - INFO - Checking package 60 of 65 packages
+2024-12-05 12:43:39,281 - INFO - Checking package 61 of 65 packages
+2024-12-05 12:44:38,683 - INFO - Checking package 62 of 65 packages
+2024-12-05 12:45:36,541 - INFO - Checking package 63 of 65 packages
+2024-12-05 12:45:50,055 - INFO - Checking package 64 of 65 packages
+2024-12-05 12:46:13,089 - INFO - Remaining packages: 149

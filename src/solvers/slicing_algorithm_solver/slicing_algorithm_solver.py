@@ -1,5 +1,7 @@
 import os
 import sys
+import json
+
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -76,8 +78,9 @@ class SlicingAlgorithmSolver(Solver):
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
 
-        for _uld in result["bins_packed"]:
-            for _package in _uld["items"]:
+
+        for _uld in result.keys():
+            for _package in result[_uld]:
                 num_packages -= 1
 
         if num_packages != 0:
@@ -85,12 +88,22 @@ class SlicingAlgorithmSolver(Solver):
 
         uld_package_map = {}
 
-        for _uld in result["bins_packed"]:
-            for package in _uld["items"]:
-                uld_id= _uld["bin_data"]["id"]
+        for _uld in result.keys():
+            for package in result[_uld]:
+                uld_id= _uld
                 if uld_id not in uld_package_map:
                     uld_package_map[uld_id] = []
-
+                    package = {
+                        "id": package[0],
+                        "coordinates": {
+                            "x1": package[1],
+                            "y1": package[2],
+                            "z1": package[3],
+                            "x2": package[4],
+                            "y2": package[5],
+                            "z2": package[6],
+                        },
+                    }
                 uld_package_map[uld_id].append(package)
 
         for uld_id, packages in uld_package_map.items():
@@ -142,23 +155,20 @@ class SlicingAlgorithmSolver(Solver):
         return True
 
     async def _parse_result(self, result: Dict[str, Any]):
-        for _uld in result["bins_packed"]:
-            for _package in _uld["items"]:
-                # get package
-                package_id = _package["id"]
-                package = self.package_map[package_id]
-
-                # set uld id and coordinates
-                uld_id = _uld["bin_data"]["id"]
+        for uld in result.keys():
+            uld_id = uld
+            for package in result[uld]:
                 package.uld_id = uld_id
-                x = _package["coordinates"]["x1"]
-                y = _package["coordinates"]["y1"]
-                z = _package["coordinates"]["z1"]
-                package.point1 = (x, y, z)
-                x = _package["coordinates"]["x2"]
-                y = _package["coordinates"]["y2"]
-                z = _package["coordinates"]["z2"]
-                package.point2 = (x, y, z)
+                package.point1 = (
+                    package[1],
+                    package[2],
+                    package[3],
+                )
+                package.point2 = (
+                    package[4],
+                    package[5],
+                    package[6],
+                )
 
     def check_all_fit(self) -> bool:
         """

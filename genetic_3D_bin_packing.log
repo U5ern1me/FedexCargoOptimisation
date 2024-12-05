@@ -1,0 +1,550 @@
+2024-12-05 18:26:45,497 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 18:26:45,497 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 18:26:45,497 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 18:26:45,497 - INFO - Priority packages: 103
+2024-12-05 18:26:45,497 - INFO - Economic packages: 297
+2024-12-05 18:26:45,497 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 18:26:45,497 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 18:26:45,497 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 18:26:45,497 - INFO - Checking 0 ULDs
+2024-12-05 18:26:45,497 - INFO - Checking 1 ULDs
+2024-12-05 18:26:45,497 - INFO - Checking 2 ULDs
+2024-12-05 18:26:45,498 - INFO - Checking 3 ULDs
+2024-12-05 18:26:45,498 - INFO - Found 1 valid ULD splits
+2024-12-05 18:26:45,498 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 18:26:49,959 - ERROR - Error in strategy: 'bins_packed'
+2024-12-05 18:27:47,329 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 18:27:47,329 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 18:27:47,329 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 18:27:47,330 - INFO - Priority packages: 103
+2024-12-05 18:27:47,330 - INFO - Economic packages: 297
+2024-12-05 18:27:47,330 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 18:27:47,330 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 18:27:47,330 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 18:27:47,330 - INFO - Checking 0 ULDs
+2024-12-05 18:27:47,330 - INFO - Checking 1 ULDs
+2024-12-05 18:27:47,330 - INFO - Checking 2 ULDs
+2024-12-05 18:27:47,330 - INFO - Checking 3 ULDs
+2024-12-05 18:27:47,330 - INFO - Found 1 valid ULD splits
+2024-12-05 18:27:47,330 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 18:27:50,573 - ERROR - Error in strategy: 'bins_packed'
+2024-12-05 18:56:58,549 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 18:56:58,549 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 18:56:58,549 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 18:56:58,549 - INFO - Priority packages: 103
+2024-12-05 18:56:58,549 - INFO - Economic packages: 297
+2024-12-05 18:56:58,549 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 18:56:58,549 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 18:56:58,549 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 18:56:58,549 - INFO - Checking 0 ULDs
+2024-12-05 18:56:58,549 - INFO - Checking 1 ULDs
+2024-12-05 18:56:58,549 - INFO - Checking 2 ULDs
+2024-12-05 18:56:58,549 - INFO - Checking 3 ULDs
+2024-12-05 18:56:58,549 - INFO - Found 1 valid ULD splits
+2024-12-05 18:56:58,549 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 18:57:01,831 - ERROR - Error in strategy: 'bins_packed'
+2024-12-05 18:58:06,055 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 18:58:06,055 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 18:58:06,055 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 18:58:06,055 - INFO - Priority packages: 103
+2024-12-05 18:58:06,055 - INFO - Economic packages: 297
+2024-12-05 18:58:06,055 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 18:58:06,056 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 18:58:06,056 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 18:58:06,056 - INFO - Checking 0 ULDs
+2024-12-05 18:58:06,056 - INFO - Checking 1 ULDs
+2024-12-05 18:58:06,056 - INFO - Checking 2 ULDs
+2024-12-05 18:58:06,056 - INFO - Checking 3 ULDs
+2024-12-05 18:58:06,056 - INFO - Found 1 valid ULD splits
+2024-12-05 18:58:06,056 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 18:58:09,247 - ERROR - Error in strategy: 'bins_packed'
+2024-12-05 18:59:46,159 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 18:59:46,159 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 18:59:46,159 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 18:59:46,159 - INFO - Priority packages: 103
+2024-12-05 18:59:46,159 - INFO - Economic packages: 297
+2024-12-05 18:59:46,159 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 18:59:46,159 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 18:59:46,159 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 18:59:46,159 - INFO - Checking 0 ULDs
+2024-12-05 18:59:46,159 - INFO - Checking 1 ULDs
+2024-12-05 18:59:46,159 - INFO - Checking 2 ULDs
+2024-12-05 18:59:46,159 - INFO - Checking 3 ULDs
+2024-12-05 18:59:46,159 - INFO - Found 1 valid ULD splits
+2024-12-05 18:59:46,159 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 18:59:49,428 - ERROR - Error in strategy: Object of type int64 is not JSON serializable
+2024-12-05 19:01:22,216 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:01:22,216 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:01:22,216 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:01:22,216 - INFO - Priority packages: 103
+2024-12-05 19:01:22,216 - INFO - Economic packages: 297
+2024-12-05 19:01:22,216 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:01:22,216 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:01:22,216 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:01:22,216 - INFO - Checking 0 ULDs
+2024-12-05 19:01:22,216 - INFO - Checking 1 ULDs
+2024-12-05 19:01:22,216 - INFO - Checking 2 ULDs
+2024-12-05 19:01:22,216 - INFO - Checking 3 ULDs
+2024-12-05 19:01:22,216 - INFO - Found 1 valid ULD splits
+2024-12-05 19:01:22,216 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:01:25,531 - ERROR - Error in strategy: 'bins_packed'
+2024-12-05 19:06:24,398 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:06:24,398 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:06:24,398 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:06:24,398 - INFO - Priority packages: 103
+2024-12-05 19:06:24,398 - INFO - Economic packages: 297
+2024-12-05 19:06:24,398 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:06:24,398 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:06:24,398 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:06:24,398 - INFO - Checking 0 ULDs
+2024-12-05 19:06:24,398 - INFO - Checking 1 ULDs
+2024-12-05 19:06:24,398 - INFO - Checking 2 ULDs
+2024-12-05 19:06:24,398 - INFO - Checking 3 ULDs
+2024-12-05 19:06:24,398 - INFO - Found 1 valid ULD splits
+2024-12-05 19:06:24,398 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:06:28,010 - ERROR - Error in strategy: 'bins_packed'
+2024-12-05 19:07:22,897 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:07:22,897 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:07:22,897 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:07:22,897 - INFO - Priority packages: 103
+2024-12-05 19:07:22,897 - INFO - Economic packages: 297
+2024-12-05 19:07:22,897 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:07:22,897 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:07:22,897 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:07:22,897 - INFO - Checking 0 ULDs
+2024-12-05 19:07:22,897 - INFO - Checking 1 ULDs
+2024-12-05 19:07:22,897 - INFO - Checking 2 ULDs
+2024-12-05 19:07:22,897 - INFO - Checking 3 ULDs
+2024-12-05 19:07:22,897 - INFO - Found 1 valid ULD splits
+2024-12-05 19:07:22,897 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:07:52,773 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:07:52,774 - INFO - Current best split: inf
+2024-12-05 19:07:52,774 - INFO - Checking 4 ULDs
+2024-12-05 19:07:52,774 - INFO - Found 1 valid ULD splits
+2024-12-05 19:07:52,774 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 19:08:32,452 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:08:32,452 - INFO - Current best split: inf
+2024-12-05 19:08:32,452 - INFO - Checking 5 ULDs
+2024-12-05 19:08:32,452 - INFO - Found 1 valid ULD splits
+2024-12-05 19:08:32,452 - INFO - Trying to fit priority and economic packages in ULDS: U1 U3 U4 U5 U6 
+2024-12-05 19:09:09,371 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:09:09,371 - INFO - Current best split: inf
+2024-12-05 19:09:09,371 - INFO - Checking 6 ULDs
+2024-12-05 19:09:09,371 - INFO - Found 1 valid ULD splits
+2024-12-05 19:09:09,372 - INFO - Trying to fit priority and economic packages in ULDS: U1 U2 U3 U4 U5 U6 
+2024-12-05 19:09:52,491 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:09:52,491 - INFO - Current best split: inf
+2024-12-05 19:09:52,491 - INFO - Remaining packages: 297
+2024-12-05 19:09:52,491 - INFO - Checking package 0 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 1 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 2 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 3 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 4 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 5 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 6 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 7 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 8 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 9 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 10 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 11 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 12 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 13 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 14 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 15 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 16 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 17 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 18 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 19 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 20 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 21 of 65 packages
+2024-12-05 19:09:52,491 - INFO - Checking package 22 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 23 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 24 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 25 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 26 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 27 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 28 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 29 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 30 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 31 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 32 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 33 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 34 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 35 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 36 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 37 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 38 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 39 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 40 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 41 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 42 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 43 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 44 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 45 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 46 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 47 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 48 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 49 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 50 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 51 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 52 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 53 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 54 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 55 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 56 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 57 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 58 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 59 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 60 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 61 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 62 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 63 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Checking package 64 of 65 packages
+2024-12-05 19:09:52,492 - INFO - Remaining packages: 297
+2024-12-05 19:11:14,622 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:11:14,622 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:11:14,622 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:11:14,622 - INFO - Priority packages: 103
+2024-12-05 19:11:14,622 - INFO - Economic packages: 297
+2024-12-05 19:11:14,622 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:11:14,622 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:11:14,623 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:11:14,623 - INFO - Checking 0 ULDs
+2024-12-05 19:11:14,623 - INFO - Checking 1 ULDs
+2024-12-05 19:11:14,623 - INFO - Checking 2 ULDs
+2024-12-05 19:11:14,623 - INFO - Checking 3 ULDs
+2024-12-05 19:11:14,623 - INFO - Found 1 valid ULD splits
+2024-12-05 19:11:14,623 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:11:41,649 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:11:41,649 - INFO - Current best split: inf
+2024-12-05 19:11:41,649 - INFO - Checking 4 ULDs
+2024-12-05 19:11:41,649 - INFO - Found 1 valid ULD splits
+2024-12-05 19:11:41,649 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 19:13:42,957 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:13:42,957 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:13:42,957 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:13:42,958 - INFO - Priority packages: 103
+2024-12-05 19:13:42,958 - INFO - Economic packages: 297
+2024-12-05 19:13:42,958 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:13:42,958 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:13:42,958 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:13:42,958 - INFO - Checking 0 ULDs
+2024-12-05 19:13:42,958 - INFO - Checking 1 ULDs
+2024-12-05 19:13:42,958 - INFO - Checking 2 ULDs
+2024-12-05 19:13:42,958 - INFO - Checking 3 ULDs
+2024-12-05 19:13:42,958 - INFO - Found 1 valid ULD splits
+2024-12-05 19:13:42,958 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:14:10,593 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:14:10,593 - INFO - Current best split: inf
+2024-12-05 19:14:10,593 - INFO - Checking 4 ULDs
+2024-12-05 19:14:10,593 - INFO - Found 1 valid ULD splits
+2024-12-05 19:14:10,593 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 19:15:56,316 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:15:56,316 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:15:56,316 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:15:56,316 - INFO - Priority packages: 103
+2024-12-05 19:15:56,316 - INFO - Economic packages: 297
+2024-12-05 19:15:56,316 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:15:56,316 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:15:56,317 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:15:56,317 - INFO - Checking 0 ULDs
+2024-12-05 19:15:56,317 - INFO - Checking 1 ULDs
+2024-12-05 19:15:56,317 - INFO - Checking 2 ULDs
+2024-12-05 19:15:56,317 - INFO - Checking 3 ULDs
+2024-12-05 19:15:56,317 - INFO - Found 1 valid ULD splits
+2024-12-05 19:15:56,317 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:16:26,295 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:16:26,295 - INFO - Current best split: inf
+2024-12-05 19:16:26,295 - INFO - Checking 4 ULDs
+2024-12-05 19:16:26,295 - INFO - Found 1 valid ULD splits
+2024-12-05 19:16:26,295 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 19:16:58,774 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:16:58,774 - INFO - Current best split: inf
+2024-12-05 19:16:58,774 - INFO - Checking 5 ULDs
+2024-12-05 19:16:58,775 - INFO - Found 1 valid ULD splits
+2024-12-05 19:16:58,775 - INFO - Trying to fit priority and economic packages in ULDS: U1 U3 U4 U5 U6 
+2024-12-05 19:17:39,127 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:17:39,127 - INFO - Current best split: inf
+2024-12-05 19:17:39,127 - INFO - Checking 6 ULDs
+2024-12-05 19:17:39,127 - INFO - Found 1 valid ULD splits
+2024-12-05 19:17:39,127 - INFO - Trying to fit priority and economic packages in ULDS: U1 U2 U3 U4 U5 U6 
+2024-12-05 19:18:25,641 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:18:25,641 - INFO - Current best split: inf
+2024-12-05 19:18:25,642 - INFO - Remaining packages: 297
+2024-12-05 19:18:25,642 - INFO - Checking package 0 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 1 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 2 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 3 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 4 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 5 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 6 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 7 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 8 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 9 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 10 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 11 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 12 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 13 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 14 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 15 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 16 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 17 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 18 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 19 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 20 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 21 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 22 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 23 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 24 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 25 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 26 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 27 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 28 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 29 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 30 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 31 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 32 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 33 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 34 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 35 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 36 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 37 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 38 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 39 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 40 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 41 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 42 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 43 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 44 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 45 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 46 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 47 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 48 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 49 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 50 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 51 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 52 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 53 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 54 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 55 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 56 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 57 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 58 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 59 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 60 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 61 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 62 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 63 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Checking package 64 of 65 packages
+2024-12-05 19:18:25,642 - INFO - Remaining packages: 297
+2024-12-05 19:21:48,351 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:21:48,351 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:21:48,352 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:21:48,352 - INFO - Priority packages: 103
+2024-12-05 19:21:48,352 - INFO - Economic packages: 297
+2024-12-05 19:21:48,352 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:21:48,352 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:21:48,352 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:21:48,352 - INFO - Checking 0 ULDs
+2024-12-05 19:21:48,352 - INFO - Checking 1 ULDs
+2024-12-05 19:21:48,352 - INFO - Checking 2 ULDs
+2024-12-05 19:21:48,352 - INFO - Checking 3 ULDs
+2024-12-05 19:21:48,352 - INFO - Found 1 valid ULD splits
+2024-12-05 19:21:48,352 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:22:18,131 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:22:18,131 - INFO - Current best split: inf
+2024-12-05 19:22:18,131 - INFO - Checking 4 ULDs
+2024-12-05 19:22:18,131 - INFO - Found 1 valid ULD splits
+2024-12-05 19:22:18,131 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 19:22:55,519 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:22:55,519 - INFO - Current best split: inf
+2024-12-05 19:22:55,519 - INFO - Checking 5 ULDs
+2024-12-05 19:22:55,519 - INFO - Found 1 valid ULD splits
+2024-12-05 19:22:55,519 - INFO - Trying to fit priority and economic packages in ULDS: U1 U3 U4 U5 U6 
+2024-12-05 19:23:34,817 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:23:34,817 - INFO - Current best split: inf
+2024-12-05 19:23:34,817 - INFO - Checking 6 ULDs
+2024-12-05 19:23:34,817 - INFO - Found 1 valid ULD splits
+2024-12-05 19:23:34,817 - INFO - Trying to fit priority and economic packages in ULDS: U1 U2 U3 U4 U5 U6 
+2024-12-05 19:24:14,030 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:24:14,030 - INFO - Current best split: inf
+2024-12-05 19:24:14,030 - INFO - Remaining packages: 297
+2024-12-05 19:24:14,030 - INFO - Checking package 0 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 1 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 2 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 3 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 4 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 5 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 6 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 7 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 8 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 9 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 10 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 11 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 12 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 13 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 14 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 15 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 16 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 17 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 18 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 19 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 20 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 21 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 22 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 23 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 24 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 25 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 26 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 27 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 28 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 29 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 30 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 31 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 32 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 33 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 34 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 35 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 36 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 37 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 38 of 65 packages
+2024-12-05 19:24:14,030 - INFO - Checking package 39 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 40 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 41 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 42 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 43 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 44 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 45 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 46 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 47 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 48 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 49 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 50 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 51 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 52 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 53 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 54 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 55 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 56 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 57 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 58 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 59 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 60 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 61 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 62 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 63 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Checking package 64 of 65 packages
+2024-12-05 19:24:14,031 - INFO - Remaining packages: 297
+2024-12-05 19:28:56,425 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:28:56,425 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:28:56,425 - INFO - using solver: SlicingAlgorithmSolver
+2024-12-05 19:28:56,425 - INFO - Priority packages: 103
+2024-12-05 19:28:56,425 - INFO - Economic packages: 297
+2024-12-05 19:28:56,425 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:28:56,425 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:28:56,426 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:28:56,426 - INFO - Checking 0 ULDs
+2024-12-05 19:28:56,426 - INFO - Checking 1 ULDs
+2024-12-05 19:28:56,426 - INFO - Checking 2 ULDs
+2024-12-05 19:28:56,426 - INFO - Checking 3 ULDs
+2024-12-05 19:28:56,426 - INFO - Found 1 valid ULD splits
+2024-12-05 19:28:56,426 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:29:26,151 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:29:26,152 - INFO - Current best split: inf
+2024-12-05 19:29:26,152 - INFO - Checking 4 ULDs
+2024-12-05 19:29:26,152 - INFO - Found 1 valid ULD splits
+2024-12-05 19:29:26,152 - INFO - Trying to fit priority and economic packages in ULDS: U3 U4 U5 U6 
+2024-12-05 19:30:05,429 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:30:05,429 - INFO - Current best split: inf
+2024-12-05 19:30:05,429 - INFO - Checking 5 ULDs
+2024-12-05 19:30:05,429 - INFO - Found 1 valid ULD splits
+2024-12-05 19:30:05,429 - INFO - Trying to fit priority and economic packages in ULDS: U1 U3 U4 U5 U6 
+2024-12-05 19:30:45,986 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:30:45,987 - INFO - Current best split: inf
+2024-12-05 19:30:45,987 - INFO - Checking 6 ULDs
+2024-12-05 19:30:45,987 - INFO - Found 1 valid ULD splits
+2024-12-05 19:30:45,987 - INFO - Trying to fit priority and economic packages in ULDS: U1 U2 U3 U4 U5 U6 
+2024-12-05 19:31:25,129 - INFO - Could not fit the priority packages in ULD group 1
+2024-12-05 19:31:25,129 - INFO - Current best split: inf
+2024-12-05 19:31:25,129 - INFO - Remaining packages: 297
+2024-12-05 19:31:25,129 - INFO - Checking package 0 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 1 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 2 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 3 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 4 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 5 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 6 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 7 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 8 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 9 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 10 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 11 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 12 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 13 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 14 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 15 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 16 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 17 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 18 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 19 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 20 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 21 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 22 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 23 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 24 of 65 packages
+2024-12-05 19:31:25,129 - INFO - Checking package 25 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 26 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 27 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 28 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 29 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 30 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 31 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 32 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 33 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 34 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 35 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 36 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 37 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 38 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 39 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 40 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 41 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 42 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 43 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 44 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 45 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 46 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 47 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 48 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 49 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 50 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 51 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 52 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 53 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 54 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 55 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 56 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 57 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 58 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 59 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 60 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 61 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 62 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 63 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Checking package 64 of 65 packages
+2024-12-05 19:31:25,130 - INFO - Remaining packages: 297
+2024-12-05 19:36:19,425 - INFO - Average package density: 0.00017962154023762767
+2024-12-05 19:36:19,425 - INFO - Average ULD density: 0.0001742708712113059
+2024-12-05 19:36:19,425 - INFO - using solver: ThreeDBinPackingSolver
+2024-12-05 19:36:19,425 - INFO - Priority packages: 103
+2024-12-05 19:36:19,425 - INFO - Economic packages: 297
+2024-12-05 19:36:19,425 - INFO - Sorting heuristic 1: base_sorting_heuristic_1
+2024-12-05 19:36:19,425 - INFO - Sorting heuristic 2: base_sorting_heuristic_3
+2024-12-05 19:36:19,426 - INFO - [[[]], [['U5']], [['U5', 'U6']], [['U3', 'U5', 'U6']], [['U3', 'U4', 'U5', 'U6']], [['U1', 'U3', 'U4', 'U5', 'U6']], [['U1', 'U2', 'U3', 'U4', 'U5', 'U6']]]
+2024-12-05 19:36:19,426 - INFO - Checking 0 ULDs
+2024-12-05 19:36:19,426 - INFO - Checking 1 ULDs
+2024-12-05 19:36:19,426 - INFO - Checking 2 ULDs
+2024-12-05 19:36:19,426 - INFO - Checking 3 ULDs
+2024-12-05 19:36:19,426 - INFO - Found 1 valid ULD splits
+2024-12-05 19:36:19,426 - INFO - Trying to fit priority and economic packages in ULDS: U3 U5 U6 
+2024-12-05 19:36:19,426 - ERROR - Error in strategy: ThreeDBinPackingSolver.solve() got an unexpected keyword argument 'only_check_fits'

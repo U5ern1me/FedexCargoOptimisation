@@ -289,6 +289,7 @@ async def find_splits_economic_packages(
         partition_1 = [*priority_packages, *economic_packages[:mid]]
         solver1 = solver(ulds=uld_group_1, packages=partition_1)
         await solver1.solve(only_check_fits=True)
+        
         could_fit = await solver1.get_fit()
         if could_fit:
             lower_bound = mid
