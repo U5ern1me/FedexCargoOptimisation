@@ -5,13 +5,10 @@ from typing import List, Tuple, Dict, Any, Optional
 import random
 import time
 import logging
-import json
 import asyncio
 import aiohttp
 from solvers import solvers
 from itertools import combinations
-
-DUMP = True
 
 
 def get_all_division_of_ulds(ulds: List[ULD], check_top: int) -> List[List[List[ULD]]]:
@@ -149,7 +146,6 @@ class Genetic3DBinPacking:
         best_score: int = 0,
         seed: Optional[int] = None,
     ):
-        print("IN INIT")
 
         self.packages: List[Package] = inputs["packages"]
         self.ulds: List[ULD] = inputs["ulds"]
@@ -186,8 +182,6 @@ class Genetic3DBinPacking:
             package.delay_cost for package in self.economy_packages
         )
 
-        print("HELLOOOOOOOOOOO")
-
         self.mutation_bracket_size: int = mutation_bracket_size
         self.eliteCProb: float = eliteCProb
 
@@ -206,8 +200,6 @@ class Genetic3DBinPacking:
 
         random.seed(self.seed)
         np.random.seed(self.seed)
-
-        print("END OF INIT")
 
     async def get_best_ulds(self) -> List[str]:
 
@@ -413,13 +405,30 @@ class Genetic3DBinPacking:
             Tuple[np.ndarray, List[dict]]: (Costs Array, Solutions List)
         """
         async with aiohttp.ClientSession() as session:
-            tasks = [
-                self.evaluate_individual_fitness(
-                    i, individual, economy_ulds, session=session
-                )
-                for i, individual in enumerate(population)
+            fitness_solvers = [
+                self.solver(economy_ulds, self.economy_packages[individual == 1])
+                for individual in population
             ]
-            fitness_list = await asyncio.gather(*tasks)
+
+            tasks = [
+                fitness_solver.solve(session=session, only_check_fits=True)
+                for fitness_solver in fitness_solvers
+            ]
+            await asyncio.gather(*tasks)
+
+            tasks = [
+                fitness_solver.get_packing_json(session=session)
+                for fitness_solver in fitness_solvers
+            ]
+            packing_responses = await asyncio.gather(*tasks)
+
+            fitness_list = [
+                (
+                    await self.calculate_cost(individual, packing_response),
+                    packing_response,
+                )
+                for individual, packing_response in zip(population, packing_responses)
+            ]
 
         costs = np.array([cost for cost, _ in fitness_list])
         solutions = [solution for _, solution in fitness_list]
@@ -522,13 +531,12 @@ class Genetic3DBinPacking:
         if verbose:
             logging.info(f"Population: {len(population)}")
             logging.info(f"Solver: {self.solver.__name__}")
-        # population = np.load("population.npy")
+
         priority_ulds, economy_ulds = await self.get_best_ulds()
 
         if verbose:
             logging.info(f"Priority ULDs: {len(priority_ulds)}")
             logging.info(f"Economy ULDs: {len(economy_ulds)}")
-            logging.info(f"Population: {len(population)}")
 
         # Adjust all individuals concurrently
         tasks = [self.adjust_individual(individual) for individual in population]
@@ -564,9 +572,6 @@ class Genetic3DBinPacking:
             logging.info(f"Generation: 0, Best Score: {self.best_fitness}")
 
         for generation in range(1, self.num_generations + 1):
-            # Save population for debugging (remove in production)
-            np.save("population.npy", population)  # TODO: Remove this line
-
             # Early stopping check
             if generation - best_generation > patience:
                 if verbose:
@@ -616,10 +621,6 @@ class Genetic3DBinPacking:
             if fitness_costs[0] < self.best_fitness:
                 self.best_fitness = fitness_costs[0]
                 self.best_solution = fitness_solutions[0]
-
-                if DUMP:
-                    with open("best_solution.json", "w") as f:
-                        json.dump(self.best_solution, f)
 
                 best_generation = generation
 
