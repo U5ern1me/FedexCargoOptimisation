@@ -23,3 +23,178 @@ This repository implements a **Greedy Heuristic Strategy** for solving the **3D 
 
 ```bash
 pip install -r requirements.txt
+```
+
+### Project Structure
+
+The project contains the following files:
+
+```
+greedy_heuristic/
+├── __init__.py               # Initializes the package and makes it importable
+├── greedy_heuristic.config   # Configuration file to specify solver and error tuning settings
+├── greedy_heuristic_strategy.py  # Contains the GreedyHeuristicStrategy class (main logic)
+├── greedy_heuristic_utils.py    # Utility functions for sorting, ULD splitting, and package fitting
+└── solver.py                # The underlying solver used for checking package fits
+```
+
+- `__init__.py`: Initializes the package and makes it importable as a module.
+- `greedy_heuristic.config`: Configuration file to specify solver and error tuning settings.
+- `greedy_heuristic_strategy.py`: Contains the main logic for the Greedy Heuristic Strategy.
+- `greedy_heuristic_utils.py`: Utility functions for packing, sorting, and handling ULD splits.
+- `solver.py`: The underlying solver used for checking if packages fit into ULDs.
+
+---
+
+## Key Components
+
+### **GreedyHeuristicStrategy** (`greedy_heuristic_strategy.py`)
+
+The core of this strategy is the `GreedyHeuristicStrategy` class, which implements the greedy heuristic for solving the bin packing problem. It is responsible for:
+
+- **Calculating Average Densities**: The strategy calculates the average density for packages and ULDs based on their weight and volume to guide the sorting of packages.
+- **Dividing Packages into Priority and Economic**: The strategy segregates the packages into priority packages (which must be packed first) and economic packages (which are packed second based on cost efficiency).
+- **Solving the Bin Packing Problem**: The algorithm iteratively checks ULD splits and evaluates the fit of both priority and economic packages using an external solver.
+
+### **Solver** (`solver.py`)
+
+The solver is responsible for checking if packages fit into the ULDs. It is configured dynamically based on the selected solver in the configuration file (`greedy_heuristic.config`). The solver works in conjunction with the heuristic strategy to ensure optimal packing.
+
+### **Utilities** (`greedy_heuristic_utils.py`)
+
+Utility functions in this file provide support for:
+
+- **Sorting Packages**: Packages are sorted based on various heuristics such as delay cost per kilogram and density.
+- **ULD Splitting**: The ULDs are split into possible configurations, and valid splits are evaluated for packing feasibility.
+- **Package Fitting**: Functions like `virtual_fit_priority` and `find_splits_economic_packages` help check if the packages can fit into the given ULDs.
+
+---
+
+## How It Works
+
+### 1. **Density Calculations**
+The strategy calculates the average densities of both packages and ULDs. The density is calculated as:
+
+- **Package Density**: `package.weight / (package.length * package.width * package.height)`
+- **ULD Density**: `uld.weight_limit / (uld.length * uld.width * uld.height)`
+
+The strategy uses these values to determine how best to sort the packages and divide them into priority and economic groups.
+
+### 2. **Sorting Heuristics**
+Based on the average densities, two sorting heuristics are defined:
+
+- **Sorting Heuristic 1**: Used for sorting economic packages based on delay costs and weight.
+- **Sorting Heuristic 2**: Used for sorting the remaining packages after the first division.
+
+### 3. **Package Division**
+Packages are divided into **priority** and **economic** categories. Priority packages are packed first to ensure timely delivery, while economic packages are packed with a focus on minimizing delay cost.
+
+### 4. **ULD Splitting and Validation**
+All potential splits of ULDs are generated. For each split, the heuristic checks whether the priority packages can fit. If valid, the split is kept for further optimization of economic packages.
+
+### 5. **Error Tuning**
+The error tuning parameter allows for slight adjustments to the packing process to handle edge cases or fitting issues. This parameter controls the number of remaining packages to be checked against the ULDs.
+
+### 6. **Final Packing**
+Once the optimal split and packing strategy is determined, the solver is invoked to finalize the packing and check the fit for each partition.
+
+---
+
+## Configuration (`greedy_heuristic.config`)
+
+The configuration file is crucial for customizing the solver and tuning the packing process. Here is an example configuration:
+
+```json
+{
+    "solver": "threeD_bin_packing",
+    "error tuning": 65
+}
+```
+
+- **solver**: Specifies which solver to use for packing (e.g., `threeD_bin_packing`).
+- **error tuning**: A parameter to control the flexibility in fitting packages into the ULDs (e.g., 65).
+
+---
+
+## Usage Example
+
+### Step 1: Define Packages and ULDs
+
+Create a list of packages and ULDs. Each package and ULD must have properties such as dimensions and weight:
+
+```python
+# Define Packages
+packages = [
+    Package(weight=10, length=2, width=2, height=1, delay_cost=5),
+    Package(weight=20, length=3, width=3, height=2, delay_cost=3),
+    # Add more packages as required
+]
+
+# Define ULDs
+ulds = [
+    ULD(length=10, width=10, height=5, weight_limit=100),
+    # Add more ULDs as required
+]
+```
+
+### Step 2: Initialize and Solve the Problem
+
+Import the `GreedyHeuristicStrategy` and run the `solve()` method:
+
+```python
+from greedy_heuristic_strategy import GreedyHeuristicStrategy
+
+# Create an instance of the strategy
+strategy = GreedyHeuristicStrategy(packages=packages, ulds=ulds)
+
+# Solve the bin packing problem asynchronously
+await strategy.solve()
+```
+
+### Step 3: Check Results
+
+After solving, you can check the final partitions and see how the packages are distributed across the ULDs:
+
+```python
+print(f"Partition 1: {strategy.partition_1}")
+print(f"Partition 2: {strategy.partition_2}")
+```
+
+---
+
+## File Overview
+
+- **`greedy_heuristic.config`**: Configuration file where you specify the solver and tuning parameters.
+  
+- **`greedy_heuristic_strategy.py`**: Main file containing the `GreedyHeuristicStrategy` class, responsible for the core packing logic.
+  
+- **`greedy_heuristic_utils.py`**: Helper utilities for sorting, splitting ULDs, and evaluating packing validity.
+  
+- **`solver.py`**: Contains the underlying 3D bin packing solver, which checks if packages fit into ULDs.
+
+---
+
+## Contributing
+
+If you would like to contribute, follow these steps:
+
+1. Fork the repository.
+2. Create a new branch.
+3. Make your changes and add tests.
+4. Push to your forked repository.
+5. Submit a pull request.
+
+Please ensure that your code adheres to the existing coding style and is well-documented.
+
+---
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+## Acknowledgments
+
+- The packing heuristics and solver were inspired by industry best practices for logistics and transportation.
+- Special thanks to the open-source community for the development of 3D bin packing algorithms.
