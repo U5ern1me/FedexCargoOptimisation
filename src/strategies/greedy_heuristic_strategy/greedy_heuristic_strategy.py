@@ -7,6 +7,7 @@ from solvers import solvers
 from .greedy_heuristic_utils import *
 from utils.io import load_config
 
+import aiohttp
 import logging
 
 config = load_config(os.path.join(os.path.dirname(__file__), "greedy_heuristic.config"))
@@ -159,44 +160,45 @@ class GreedyHeuristicStrategy(Strategy):
         if self.debug:
             logging.info(f"Remaining packages: {len(remaining_packages)}")
 
-        _remaining_packages = []
-        for package_num, package in enumerate(
-            remaining_packages[: config["error tuning"]]
-        ):
-            if self.debug:
-                logging.info(
-                    f"Checking package {package_num} of {config['error tuning']} packages"
-                )
-
-            if (
-                best_split_uld_splits[0] is not None
-                and len(best_split_uld_splits[0]) > 0
+        async with aiohttp.ClientSession() as session:
+            _remaining_packages = []
+            for package_num, package in enumerate(
+                remaining_packages[: config["error tuning"]]
             ):
-                _partition_1 = partition_1 + [package]
-                _solver_1 = solver(
-                    ulds=best_split_uld_splits[0],
-                    packages=_partition_1,
-                )
-                await _solver_1.solve(only_check_fits=True)
-                if await _solver_1.get_fit():
-                    partition_1.append(package)
-                    continue
+                if self.debug:
+                    logging.info(
+                        f"Checking package {package_num} of {config['error tuning']} packages"
+                    )
 
-            if (
-                best_split_uld_splits[1] is not None
-                and len(best_split_uld_splits[1]) > 0
-            ):
-                _partition_2 = partition_2 + [package]
-                _solver_2 = solver(
-                    ulds=best_split_uld_splits[1],
-                    packages=_partition_2,
-                )
-                await _solver_2.solve(only_check_fits=True)
-                if await _solver_2.get_fit():
-                    partition_2.append(package)
-                    continue
+                if (
+                    best_split_uld_splits[0] is not None
+                    and len(best_split_uld_splits[0]) > 0
+                ):
+                    _partition_1 = partition_1 + [package]
+                    _solver_1 = solver(
+                        ulds=best_split_uld_splits[0],
+                        packages=_partition_1,
+                    )
+                    await _solver_1.solve(only_check_fits=True, session=session)
+                    if await _solver_1.get_fit(session=session):
+                        partition_1.append(package)
+                        continue
 
-            _remaining_packages.append(package)
+                if (
+                    best_split_uld_splits[1] is not None
+                    and len(best_split_uld_splits[1]) > 0
+                ):
+                    _partition_2 = partition_2 + [package]
+                    _solver_2 = solver(
+                        ulds=best_split_uld_splits[1],
+                        packages=_partition_2,
+                    )
+                    await _solver_2.solve(only_check_fits=True, session=session)
+                    if await _solver_2.get_fit(session=session):
+                        partition_2.append(package)
+                        continue
+
+                _remaining_packages.append(package)
 
         remaining_packages = (
             _remaining_packages + remaining_packages[config["error tuning"] :]
@@ -207,26 +209,27 @@ class GreedyHeuristicStrategy(Strategy):
 
         # solve for both partitions and assign the solution to the strategy (done in the solver)
         # check if the partition and uld split is valid
-        if (
-            best_split_uld_splits[0] is not None
-            and len(partition_1) > 0
-            and len(best_split_uld_splits[0]) > 0
-        ):
-            solver_1 = solver(
-                ulds=best_split_uld_splits[0],
-                packages=partition_1,
-            )
-            await solver_1.solve(only_check_fits=False)
-            await solver_1.get_fit()
+        async with aiohttp.ClientSession() as session:
+            if (
+                best_split_uld_splits[0] is not None
+                and len(partition_1) > 0
+                and len(best_split_uld_splits[0]) > 0
+            ):
+                solver_1 = solver(
+                    ulds=best_split_uld_splits[0],
+                    packages=partition_1,
+                )
+                await solver_1.solve(only_check_fits=False, session=session)
+                await solver_1.get_fit(session=session)
 
-        if (
-            best_split_uld_splits[1] is not None
-            and len(partition_2) > 0
-            and len(best_split_uld_splits[1]) > 0
-        ):
-            solver_2 = solver(
-                ulds=best_split_uld_splits[1],
-                packages=partition_2,
-            )
-            await solver_2.solve(only_check_fits=False)
-            await solver_2.get_fit()
+            if (
+                best_split_uld_splits[1] is not None
+                and len(partition_2) > 0
+                and len(best_split_uld_splits[1]) > 0
+            ):
+                solver_2 = solver(
+                    ulds=best_split_uld_splits[1],
+                    packages=partition_2,
+                )
+                await solver_2.solve(only_check_fits=False, session=session)
+                await solver_2.get_fit(session=session)

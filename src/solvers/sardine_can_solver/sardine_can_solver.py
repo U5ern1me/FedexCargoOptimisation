@@ -3,7 +3,8 @@ import sys
 
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import requests
+import aiohttp
+import asyncio
 import time
 
 from solvers.solver import Solver
@@ -71,7 +72,7 @@ class SardineCanSolver(Solver):
             "maxWeight": uld.weight_limit,
         }
 
-    async def _solve(self):
+    async def _solve(self, session: aiohttp.ClientSession = None):
         request_url = config["base url"] + "calculations"
 
         packages = [self.get_package_data(package) for package in self.packages]
@@ -92,26 +93,29 @@ class SardineCanSolver(Solver):
             },
         }
 
-        self.response = requests.post(request_url, json=request_body)
+        async with session.post(request_url, json=request_body) as response:
+            self.response = await response.json()
 
-    async def _get_result(self):
+    async def _get_result(self, session: aiohttp.ClientSession = None):
         try:
             if self.response is None:
                 raise Exception("No response from sardine can solver")
 
-            res = self.response.json()
+            res = self.response
             status_url = config["base url"] + res["statusUrl"]
             result_url = config["base url"] + res["resultUrl"]
 
             # polling until the result is ready
             while True:
-                response = requests.get(status_url)
-                response = response.json()
-                if response["status"] == "DONE":
-                    break
-                time.sleep(config["polling interval"])
+                async with session.get(status_url) as response:
+                    res = await response.json()
+                    if res["status"] == "DONE":
+                        break
 
-            return requests.get(result_url).json()
+                await asyncio.sleep(config["polling interval"])
+
+            async with session.get(result_url) as response:
+                return await response.json()
         except Exception as e:
             raise Exception(f"Error getting result from sardine can solver: {e}")
 
@@ -146,3 +150,28 @@ class SardineCanSolver(Solver):
                     y + _package["cubes"][0]["width"],
                     z + _package["cubes"][0]["height"],
                 )
+
+    async def get_packing_json(self, session: aiohttp.ClientSession = None):
+        """
+        get the packing json from sardine can solver
+
+        Returns:
+            Dict[str, Any]: packing json
+        """
+
+        response = await self._get_result(session=session)
+
+        response_json = {}
+        response_json["ulds"] = []
+
+        for _uld in response["containers"]:
+            uld_json = {}
+            _uld_id = _uld["id"]
+            uld_json["id"] = self.uld_map[_uld_id].id
+            uld_json["packages"] = []
+            for _package in _uld["assignments"]:
+                package = self.package_map[_package["piece"]]
+                uld_json["packages"].append(package.id)
+            response_json["ulds"].append(uld_json)
+
+        return response_json

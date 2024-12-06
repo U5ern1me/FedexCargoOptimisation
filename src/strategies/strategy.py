@@ -11,11 +11,6 @@ from typing import Dict, Any, Optional, List, Tuple
 from models.package import Package
 from models.uld import ULD
 
-# typing
-from typing import Dict, Any, Optional, List, Tuple
-from models.package import Package
-from models.uld import ULD
-
 
 class Strategy(ABC):
     """
@@ -139,6 +134,63 @@ class Strategy(ABC):
 
         pass
 
+    async def gravity_stabilization(self):
+        """
+        Perform gravity stabilization on the packages which might be floating in the air.
+        """
+
+        package_uld_map = {}
+
+        for package in self.packages:
+            if package.uld_id is None:
+                continue
+
+            if package.uld_id not in package_uld_map:
+                package_uld_map[package.uld_id] = []
+            package_uld_map[package.uld_id].append(package)
+
+        for uld_id, packages in package_uld_map.items():
+            sorted_packages = sorted(packages, key=lambda x: int(x.point1[2]))
+
+            for package in sorted_packages:
+                level = 0
+                for other_package in sorted_packages:
+                    if package.id == other_package.id:
+                        continue
+
+                    x_overlap = max(
+                        0,
+                        min(package.point2[0], other_package.point2[0])
+                        - max(package.point1[0], other_package.point1[0]),
+                    )
+                    y_overlap = max(
+                        0,
+                        min(package.point2[1], other_package.point2[1])
+                        - max(package.point1[1], other_package.point1[1]),
+                    )
+
+                    if (
+                        x_overlap > 0
+                        and y_overlap > 0
+                        and package.point1[2] >= other_package.point2[2]
+                    ):
+                        level = max(level, int(other_package.point2[2]))
+
+                short_by = int(package.point1[2]) - level
+                new_point1 = (
+                    package.point1[0],
+                    package.point1[1],
+                    int(package.point1[2] - short_by),
+                )
+                new_point2 = (
+                    package.point2[0],
+                    package.point2[1],
+                    int(package.point2[2] - short_by),
+                )
+
+                package.point1 = new_point1
+                package.point2 = new_point2
+
     async def run(self):
         """
         Run the strategy and write the output to a file.
@@ -151,6 +203,8 @@ class Strategy(ABC):
         self.start_time = time.time()
 
         await self.solve()
+
+        await self.gravity_stabilization()
 
         self.time_end = time.time()
         self.solution_found = True
