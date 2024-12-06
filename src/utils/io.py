@@ -99,7 +99,7 @@ def write_output(
             rows.append(
                 {
                     "Package Identifier": row[0],
-                    "ULD Identifier": row[1] if row[1] is not None else "NONE",
+                    "ULD Identifier": row[1],
                     "x1": row[2][0],
                     "y1": row[2][1],
                     "z1": row[2][2],
@@ -109,7 +109,7 @@ def write_output(
                 }
             )
             f.write(
-                f"{row[0]},{row[1]},{row[2][0]},{row[2][1]},{row[2][2]},{row[3][0]},{row[3][1]},{row[3][2]}\n"
+                f"{row[0]},{row[1] if row[1] is not None else "NONE"},{row[2][0]},{row[2][1]},{row[2][2]},{row[3][0]},{row[3][1]},{row[3][2]}\n"
             )
 
     # Convert the list of rows into a DataFrame
@@ -147,6 +147,10 @@ def read_allocation(file_path: str) -> Dict[str, Dict[str, Any]]:
         Allocation dictionary
     """
     df = pd.read_csv(os.path.join(file_path, "allocation.csv"))
+
+    df["ULD Identifier"] = df["ULD Identifier"].where(
+        df["ULD Identifier"].notnull(), None
+    )
 
     allocation_dict = {}
     for i, row in df.iterrows():

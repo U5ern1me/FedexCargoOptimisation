@@ -12,7 +12,7 @@ import shutil
 from strategies import strategies
 from utils.io import read_ulds, read_packages, load_config
 
-config = load_config("src/service.config")
+config = load_config(os.path.join(os.path.dirname(__file__), "service.config"))
 
 DEBUG = False
 
