@@ -116,49 +116,6 @@ The configuration file is crucial for customizing the solver and tuning the pack
 
 ---
 
-## Usage Example
-
-### Step 1: Define Packages and ULDs
-
-Create a list of packages and ULDs. Each package and ULD must have properties such as dimensions and weight:
-
-```python
-# Define Packages
-packages = [
-    Package(weight=10, length=2, width=2, height=1, delay_cost=5),
-    Package(weight=20, length=3, width=3, height=2, delay_cost=3),
-    # Add more packages as required
-]
-
-# Define ULDs
-ulds = [
-    ULD(length=10, width=10, height=5, weight_limit=100),
-    # Add more ULDs as required
-]
-```
-
-### Step 2: Initialize and Solve the Problem
-
-Import the `GreedyHeuristicStrategy` and run the `solve()` method:
-
-```python
-from greedy_heuristic_strategy import GreedyHeuristicStrategy
-
-# Create an instance of the strategy
-strategy = GreedyHeuristicStrategy(packages=packages, ulds=ulds)
-
-# Solve the bin packing problem asynchronously
-await strategy.solve()
-```
-
-### Step 3: Check Results
-
-After solving, you can check the final partitions and see how the packages are distributed across the ULDs:
-
-```python
-print(f"Partition 1: {strategy.partition_1}")
-print(f"Partition 2: {strategy.partition_2}")
-```
 
 ---
 
