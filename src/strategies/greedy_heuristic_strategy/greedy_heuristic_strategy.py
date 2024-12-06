@@ -111,8 +111,8 @@ class GreedyHeuristicStrategy(Strategy):
                         )
                     continue
 
-                    # for a split with more economic packages, update the best split (number of ulds in both uld splits must be same for this)
-                if sum(splits) > sum(local_best_split_packages):
+                # for a split with more economic packages, update the best split (number of ulds in both uld splits must be same for this)
+                if sum(splits) >= sum(local_best_split_packages):
                     local_best_split_packages = splits
                     local_best_split_uld_splits = (uld_group_1, uld_group_2)
 
@@ -162,9 +162,8 @@ class GreedyHeuristicStrategy(Strategy):
 
         async with aiohttp.ClientSession() as session:
             _remaining_packages = []
-            for package_num, package in enumerate(
-                remaining_packages[: config["error tuning"]]
-            ):
+            tolerance = min(config["error tuning"], len(remaining_packages))
+            for package_num, package in enumerate(remaining_packages[:tolerance]):
                 if self.debug:
                     logging.info(
                         f"Checking package {package_num} of {config['error tuning']} packages"
