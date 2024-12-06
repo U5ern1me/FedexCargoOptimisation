@@ -308,6 +308,12 @@ class ThreeDBinPackingSolver(Solver):
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
         params = {"item_coordinates": 1}
 
+        if len(packages) == 0 or len(ulds) == 0:
+            self.response = {
+                "bins_packed": [],
+            }
+            return
+
         request_body = {
             "username": config.get("username", ""),
             "api_key": config.get("api_key", ""),
@@ -343,9 +349,6 @@ class ThreeDBinPackingSolver(Solver):
                 raise Exception("No response from 3D bin packing solver")
 
             response = self.response
-
-            if "errors" in response:
-                raise Exception("API access was locked out.")
 
             return response
 
@@ -464,3 +467,20 @@ class ThreeDBinPackingSolver(Solver):
                     coordinates.get("y2", 0),
                     coordinates.get("z2", 0),
                 )
+
+    async def get_packing_json(self, session: aiohttp.ClientSession = None):
+        result = await self._get_result(session=session)
+
+        response_json = {}
+        response_json["ulds"] = []
+
+        for _uld in result["bins_packed"]:
+            uld_json = {}
+            uld_json["id"] = self.uld_map[_uld["bin_data"]["id"]].id
+            uld_json["packages"] = []
+            for _package in _uld["items"]:
+                package = self.package_map[_package["id"]]
+                uld_json["packages"].append(package.id)
+            response_json["ulds"].append(uld_json)
+
+        return response_json

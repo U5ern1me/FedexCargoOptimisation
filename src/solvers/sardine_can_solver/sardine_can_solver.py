@@ -78,6 +78,9 @@ class SardineCanSolver(Solver):
         packages = [self.get_package_data(package) for package in self.packages]
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
 
+        if len(packages) == 0 or len(ulds) == 0:
+            return
+
         request_body = {
             "configuration": {
                 "goal": config["goal"],
@@ -94,9 +97,18 @@ class SardineCanSolver(Solver):
         }
 
         async with session.post(request_url, json=request_body) as response:
+            if response.status != 200:
+                res_text = await response.text()
+                raise Exception(res_text)
+
             self.response = await response.json()
 
     async def _get_result(self, session: aiohttp.ClientSession = None):
+        if len(self.packages) == 0 or len(self.ulds) == 0:
+            return {
+                "containers": [],
+            }
+
         try:
             if self.response is None:
                 raise Exception("No response from sardine can solver")
