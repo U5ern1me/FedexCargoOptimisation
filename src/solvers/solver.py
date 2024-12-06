@@ -48,7 +48,7 @@ class Solver(ABC):
         pass
 
     async def solve(
-        self, only_check_fits: bool = False, session: aiohttp.ClientSession = None
+        self, only_check_fits: bool = True, session: aiohttp.ClientSession = None
     ):
         """
         Start the solving process

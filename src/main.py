@@ -11,7 +11,7 @@ import logging
 from utils.io import read_ulds, read_packages, read_k, write_output, load_config
 from strategies import strategies
 
-config = load_config("src/main.config")
+config = load_config("main.config")
 
 
 async def main():
