@@ -1,6 +1,7 @@
 import os
 import pandas as pd
 import json
+import pickle
 
 from models.package import Package
 from models.uld import ULD
@@ -106,6 +107,9 @@ def write_output(
     total_cost: float,
     num_packed: int,
     num_priority_uld: int,
+    package_map: Dict[Tuple[int, int, int, int, int, int], List[str]],
+    uld_map: Dict[Tuple[int, int, int, int], List[str]],
+    k: int,
     file_path: str,
 ):
     """
@@ -117,9 +121,13 @@ def write_output(
         total_cost: Total cost of the solution
         num_packed: Number of packed packages
         num_priority_uld: Number of priority ULDs
+        packages: List of packages
+        ulds: List of ULDs
         file_path: Path to the folder to save the output
     """
     rows = []
+    sols = {}
+
     with open(os.path.join(file_path, "output.txt"), "w") as f:
         # Iterate over the allocation and build rows
         f.write(f"{total_cost},{num_packed},{num_priority_uld}\n")
@@ -137,14 +145,27 @@ def write_output(
                     "z2": row[3][2],
                 }
             )
+            sols[row[0]] = {
+                "ULD Identifier": row[1],
+                "point1": row[2],
+                "point2": row[3],
+            }
             f.write(
                 f"{row[0]},{row[1] if row[1] is not None else 'NONE'},{row[2][0]},{row[2][1]},{row[2][2]},{row[3][0]},{row[3][1]},{row[3][2]}\n"
             )
-
-    # Convert the list of rows into a DataFrame
     allocation_df = pd.DataFrame(rows)
-
     allocation_df.to_csv(os.path.join(file_path, "allocation.csv"), index=False)
+    with open(os.path.join(file_path, "solution.pkl"), "wb") as f:
+        pickle.dump(
+            {
+                "packages": package_map,
+                "ulds": uld_map,
+                "k": k,
+                "cost": total_cost,
+                "solution": sols,
+            },
+            f,
+        )
 
 
 def read_k(file_path: str) -> int:

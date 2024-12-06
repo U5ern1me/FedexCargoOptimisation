@@ -5,6 +5,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from abc import ABC, abstractmethod
 import time
+import pickle
 
 # typing
 from typing import Dict, Any, Optional, List, Tuple
@@ -24,17 +25,19 @@ class Strategy(ABC):
         k_cost: Optional[float] = 0,
         ulds: List[ULD] = [],
         packages: List[Package] = [],
+        output_path: Optional[str] = None,
     ):
         """
         Args:
             k_cost: Cost of priority ULDs
             ulds: List of ULDs
             packages: List of packages
+            output_path: Path to the output directory
         """
         self.k_cost = k_cost
         self.ulds = ulds
         self.packages = packages
-
+        self.output_path = output_path
         # check if packages and ulds are not empty
         if self.packages is None or len(self.packages) == 0:
             raise ValueError("Packages not provided")
@@ -45,8 +48,13 @@ class Strategy(ABC):
         self.time_start = time.time()
         self.time_end = -1
 
+        self._package_map = {}
+        self._uld_map = {}
+
         # to check logging
         self.debug = int(os.environ.get("DEBUG", "0"))
+
+        self.initialize_maps()
 
     async def get_allocation(
         self,
@@ -78,6 +86,36 @@ class Strategy(ABC):
                 num_packed += 1
         return num_packed
 
+    def initialize_maps(self):
+        """
+        Create maps for the packages and ULDs to speed up the lookup.
+        """
+        for i in range(len(self.packages)):
+            hash_tuple = (
+                self.packages[i].length,
+                self.packages[i].width,
+                self.packages[i].height,
+                self.packages[i].weight,
+                self.packages[i].delay_cost,
+                1 if self.packages[i].priority else 0,
+            )
+            if hash_tuple in self._package_map:
+                self._package_map[hash_tuple].append(self.packages[i].id)
+            else:
+                self._package_map[hash_tuple] = [self.packages[i].id]
+
+        for i in range(len(self.ulds)):
+            hash_tuple = (
+                self.ulds[i].length,
+                self.ulds[i].width,
+                self.ulds[i].height,
+                self.ulds[i].weight_limit,
+            )
+            if hash_tuple in self._uld_map:
+                self._uld_map[hash_tuple].append(self.ulds[i].id)
+            else:
+                self._uld_map[hash_tuple] = [self.ulds[i].id]
+
     def get_num_priority_uld(self) -> int:
         """
         Get the number of ULDs that have priority packages.
@@ -108,24 +146,105 @@ class Strategy(ABC):
 
         return total_cost
 
+    async def post_process(self):
+        uld_map = {}
+        package_map = {}
+        final_found = False
+        curr_best_cost = self.calculate_cost()
+
+        for f in os.listdir(self.output_path):
+            if not os.path.exists(os.path.join(self.output_path, f, "solution.pkl")):
+                continue
+
+            with open(os.path.join(self.output_path, f, "solution.pkl"), "rb") as file:
+                data = pickle.load(file)
+
+                not_found = False
+
+                if data["k"] != self.k_cost:
+                    continue
+
+                _uld_map = {}
+
+                for uld_data in self._uld_map:
+                    if uld_data not in data["ulds"] or len(
+                        self._uld_map[uld_data]
+                    ) != len(data["ulds"][uld_data]):
+                        not_found = True
+                        break
+
+                    for i in range(len(self._uld_map[uld_data])):
+                        _uld_map[data["ulds"][uld_data][i]] = self._uld_map[uld_data][i]
+
+                if not_found:
+                    continue
+
+                _package_map = {}
+
+                for package_data in self._package_map:
+                    if package_data not in data["packages"] or len(
+                        self._package_map[package_data]
+                    ) != len(data["packages"][package_data]):
+                        not_found = True
+                        break
+
+                    for i in range(len(self._package_map[package_data])):
+                        _package_map[self._package_map[package_data][i]] = data[
+                            "packages"
+                        ][package_data][i]
+
+            if not not_found:
+                if data["cost"] < curr_best_cost:
+                    final_found = True
+                    curr_best_cost = data["cost"]
+                    uld_map = _uld_map
+                    package_map = _package_map
+                break
+
+        if not final_found:
+            return
+
+        for package in self.packages:
+            if package.id not in package_map:
+                return
+
+            s = data["solution"][package_map[package.id]]
+
+            package.uld_id = (
+                None if s["ULD Identifier"] is None else uld_map[s["ULD Identifier"]]
+            )
+            package.point1 = s["point1"]
+            package.point2 = s["point2"]
+
     async def get_outputs(self) -> Tuple[
         List[Tuple[str, Optional[str], Tuple[int, int, int], Tuple[int, int, int]]],
         float,
         int,
         int,
+        Dict[Tuple[int, int, int, int, int, int], List[str]],
+        Dict[Tuple[int, int, int, int], List[str]],
+        float,
     ]:
         """
         Get the allocation, total cost, number of packed packages, and number of priority ULDs.
 
         Returns:
-            Allocation, total cost, number of packed packages, and number of priority ULDs
+            Allocation, total cost, number of packed packages, number of priority ULDs, package map, ULD map, and k cost
         """
         total_cost = self.calculate_cost()
         allocation = await self.get_allocation()
         num_packed = self.get_num_packed()
         num_priority_uld = self.get_num_priority_uld()
 
-        return allocation, total_cost, num_packed, num_priority_uld
+        return (
+            allocation,
+            total_cost,
+            num_packed,
+            num_priority_uld,
+            self._package_map,
+            self._uld_map,
+            self.k_cost,
+        )
 
     @abstractmethod
     async def solve(self):

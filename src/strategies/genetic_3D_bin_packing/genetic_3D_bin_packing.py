@@ -38,3 +38,5 @@ class Genetic3DBinPackingStrategy(Strategy):
             logging.info(f"Solver: {config['solver']}")
 
         await model.fit(config["number of stable generations"], verbose=True)
+
+        await self.post_process()

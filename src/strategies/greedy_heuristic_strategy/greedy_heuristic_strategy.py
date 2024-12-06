@@ -203,3 +203,5 @@ class GreedyHeuristicStrategy(Strategy):
                 )
                 await solver_2.solve(only_check_fits=False, session=session)
                 await solver_2.get_fit(session=session)
+
+        await self.post_process()

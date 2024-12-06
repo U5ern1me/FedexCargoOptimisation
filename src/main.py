@@ -70,7 +70,9 @@ async def main():
     k = read_k(config["data path"])
 
     # Run strategy
-    strategy = SelectedStrategy(ulds=ulds, packages=packages, k_cost=k)
+    strategy = SelectedStrategy(
+        ulds=ulds, packages=packages, k_cost=k, output_path=config["output path"]
+    )
     try:
         await strategy.run()
     except APIError as e:

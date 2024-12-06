@@ -196,16 +196,16 @@ def get_sorting_heuristics(
     ratio = average_package_density / average_uld_density
     if ratio < 1.3:
         # Give more priority to volume
-        sorting_heuristic_1 = base_sorting_heuristic_1
-        sorting_heuristic_2 = base_sorting_heuristic_3
+        sorting_heuristic_1 = base_sorting_heuristic_1  # cost / volume
+        sorting_heuristic_2 = base_sorting_heuristic_3  # cost / volume * weight^0.15
     elif ratio < 2.1:
         # Give mixed priority to volume and weight
-        sorting_heuristic_1 = base_sorting_heuristic_3
-        sorting_heuristic_2 = base_sorting_heuristic_4
+        sorting_heuristic_1 = base_sorting_heuristic_3  # cost / volume * weight^0.15
+        sorting_heuristic_2 = base_sorting_heuristic_4  # cost / weight * volume^0.15
     else:
         # Give more priority to weight
-        sorting_heuristic_1 = base_sorting_heuristic_2
-        sorting_heuristic_2 = base_sorting_heuristic_4
+        sorting_heuristic_1 = base_sorting_heuristic_2  # cost / weight
+        sorting_heuristic_2 = base_sorting_heuristic_4  # cost / weight * volume^0.15
 
     return sorting_heuristic_1, sorting_heuristic_2
 
