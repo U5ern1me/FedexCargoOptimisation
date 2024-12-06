@@ -2,7 +2,7 @@
 
 Biased Random-Key Genetic Algorithm (BRKGA) is a genetic algorithm that uses biased random-key encoding to represent the solution. It is a population-based algorithm that uses a combination of mutation, crossover, and selection to evolve the population of solutions.
 
-We utilise the BRKGA-based algorithm from the [paper]([https://arxiv.org/abs/1407.0299](https://www.sciencedirect.com/science/article/pii/S0925527313001837)) for the 3D bin packing problem.
+We utilise the BRKGA-based algorithm from the [paper]([[https://arxiv.org/abs/1407.0299](https://www.sciencedirect.com/science/article/pii/S0925527313001837)]) for the 3D bin packing problem.
 
 
 
