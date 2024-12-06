@@ -216,7 +216,6 @@ class Strategy(ABC):
         """
         for package in self.packages:
             if package.priority and package.uld_id is None:
-                # self.error = f"Priority Package {package.id} not allocated"
                 self.error = "All priority packages cannot be allocated in given ULDs"
                 return False
 

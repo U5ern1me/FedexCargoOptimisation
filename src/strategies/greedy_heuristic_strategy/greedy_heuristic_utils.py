@@ -340,3 +340,82 @@ async def find_splits_economic_packages(
         logging.info(f"Found split 2: {split_2}")
 
     return (split_1, split_2)
+
+
+async def find_best_splits_economic_packages(
+    economic_packages: List[Package],
+    priority_packages: List[Package],
+    ulds: List[ULD],
+    uld_splits: List[List[str]],
+    solver: Callable,
+    sorting_heuristic: Callable,
+    k_cost: float,
+    num_p_uld: int,
+    verbose: bool = False,
+) -> Tuple[int, Tuple[int, int], Tuple[List[ULD], List[ULD]]]:
+    """
+    Find the best splits of the economic packages among the given uld splits.
+
+    Args:
+        economic_packages: List of economic packages
+        priority_packages: List of priority packages
+        uld_splits: List of uld splits
+        solver: Solver to check if the packages fit in the ULDs
+        sorting_heuristic: Sorting heuristic to sort the packages
+        verbose: Whether to print the steps
+
+    Returns:
+        cost, (split 1, split 2), (uld group 1, uld group 2)
+    """
+
+    # check if priority packages fit in uld splits if not then it is not a valid split
+    valid_uld_splits = []
+    for uld_split in uld_splits:
+        uld_group_1, uld_group_2 = split_ulds_into_two(ulds, uld_split)
+        if virtual_fit_priority(priority_packages, uld_group_1):
+            valid_uld_splits.append((uld_group_1, uld_group_2))
+
+    if len(valid_uld_splits) == 0:
+        return float("inf"), (0, 0), (None, None)
+
+    if verbose:
+        logging.info(f"Found {len(valid_uld_splits)} valid ULD splits")
+
+    best_split = (0, 0)
+    best_uld_splits = (None, None)
+
+    sorted_economic_packages = sort_packages(economic_packages, sorting_heuristic)
+
+    # find the best split of economic packages for each valid uld split
+    for uld_group_1, uld_group_2 in valid_uld_splits:
+        splits = await find_splits_economic_packages(
+            sorted_economic_packages,
+            priority_packages,
+            uld_group_1,
+            uld_group_2,
+            solver,
+            sorting_heuristic,
+            verbose=verbose,
+        )
+
+        if splits is None:
+            if verbose:
+                logging.info("Could not fit the priority packages in ULD group 1")
+            continue
+
+        # for a split with more economic packages, update the best split
+        if sum(splits) >= sum(best_split):
+            best_split = splits
+            best_uld_splits = (uld_group_1, uld_group_2)
+
+    # calculate the cost of the best split
+    delay_cost = sum(
+        [
+            package.delay_cost
+            for package in sorted_economic_packages[best_split[0] + best_split[1] :]
+        ]
+    )
+    spread_cost = k_cost * num_p_uld
+    total_cost = delay_cost + spread_cost
+
+    return total_cost, best_split, best_uld_splits

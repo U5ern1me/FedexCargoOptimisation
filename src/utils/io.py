@@ -36,6 +36,15 @@ def read_packages(file_path: str) -> List[Package]:
         priority = 0
         if row["Type"] == "Priority":
             priority = 1
+
+        if row["Length (cm)"] == 0 or row["Width (cm)"] == 0 or row["Height (cm)"] == 0:
+            raise ValueError(
+                f"Package {row['Package Identifier']} has invalid dimensions"
+            )
+
+        if row["Weight (kg)"] == 0:
+            raise ValueError(f"Package {row['Package Identifier']} has invalid weight")
+
         packages.append(
             Package(
                 id=row["Package Identifier"],
@@ -70,6 +79,12 @@ def read_ulds(file_path: str) -> List[ULD]:
         raise ValueError(f"Duplicate ULD identifiers found: {', '.join(duplicate_ids)}")
 
     for _, row in df.iterrows():
+        if row["Length (cm)"] == 0 or row["Width (cm)"] == 0 or row["Height (cm)"] == 0:
+            raise ValueError(f"ULD {row['ULD Identifier']} has invalid dimensions")
+
+        if row["Weight Limit (kg)"] == 0:
+            raise ValueError(f"ULD {row['ULD Identifier']} has invalid weight limit")
+
         ulds.append(
             ULD(
                 id=row["ULD Identifier"],

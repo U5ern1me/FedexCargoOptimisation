@@ -9,6 +9,7 @@ from utils.io import load_config
 
 import aiohttp
 import logging
+import asyncio
 
 config = load_config(os.path.join(os.path.dirname(__file__), "greedy_heuristic.config"))
 
@@ -63,83 +64,53 @@ class GreedyHeuristicStrategy(Strategy):
         best_split_packages = (0, 0)
         best_split_uld_splits = (None, None)
 
-        # uld_splits_arr = [[], [], [], [["U3", "U5", "U6"]]]
+        tasks = []
+        results = []
+        task_threshold = 7
+        best_cost = float("inf")
 
         for num_p_uld, uld_splits in enumerate(uld_splits_arr):
+            if self.debug:
+                logging.info(f"Checking ULD split {num_p_uld} of {len(uld_splits_arr)}")
 
-            # if the cost of the priority package spread is greater than the best split value, then continue
-            if num_p_uld * self.k_cost > best_split_value:
+            if best_cost < num_p_uld * self.k_cost:
                 continue
 
-            if self.debug:
-                logging.info(f"Checking {num_p_uld} ULDs")
-
-            # check if priority packages fit in uld splits if not then it is not a valid split
-            valid_uld_splits = []
-            for uld_split in uld_splits:
-                uld_group_1, uld_group_2 = split_ulds_into_two(self.ulds, uld_split)
-                if virtual_fit_priority(priority_packages, uld_group_1):
-                    valid_uld_splits.append((uld_group_1, uld_group_2))
-
-            # if no valid splits then continue
-            if len(valid_uld_splits) == 0:
-                continue
-
-            if self.debug:
-                logging.info(f"Found {len(valid_uld_splits)} valid ULD splits")
-
-            local_best_split_packages = (0, 0)
-            local_best_split_uld_splits = (None, None)
-
-            # find the best split of economic packages for each valid uld split
-            for uld_group_1, uld_group_2 in valid_uld_splits:
-                splits = await find_splits_economic_packages(
-                    sorted_economic_packages,
-                    priority_packages,
-                    uld_group_1,
-                    uld_group_2,
-                    solver,
-                    sorting_heuristic_1,
+            tasks.append(
+                find_best_splits_economic_packages(
+                    economic_packages=sorted_economic_packages,
+                    priority_packages=priority_packages,
+                    ulds=self.ulds,
+                    uld_splits=uld_splits,
+                    solver=solver,
+                    sorting_heuristic=sorting_heuristic_1,
+                    k_cost=self.k_cost,
+                    num_p_uld=num_p_uld,
                     verbose=self.debug,
                 )
+            )
 
-                # if no splits then continue (priority cannot fit in uld group 1)
-                if splits is None:
-                    if self.debug:
-                        logging.info(
-                            "Could not fit the priority packages in ULD group 1"
-                        )
-                    continue
+            if len(tasks) >= task_threshold:
+                _results = await asyncio.gather(*tasks)
+                results.extend(_results)
+                _best_result = min(results, key=lambda x: x[0])
+                best_cost = _best_result[0]
+                tasks = []
 
-                # for a split with more economic packages, update the best split (number of ulds in both uld splits must be same for this)
-                if sum(splits) >= sum(local_best_split_packages):
-                    local_best_split_packages = splits
-                    local_best_split_uld_splits = (uld_group_1, uld_group_2)
+        if len(tasks) > 0:
+            _results = await asyncio.gather(*tasks)
+            results.extend(_results)
 
-                if self.debug:
-                    logging.info(f"Found local best split: {local_best_split_packages}")
+        best_result = min(results, key=lambda x: x[0])
 
-                # calculate the cost of the local best split
-                delay_cost = sum(
-                    [
-                        package.delay_cost
-                        for package in sorted_economic_packages[
-                            local_best_split_packages[0]
-                            + local_best_split_packages[1] :
-                        ]
-                    ]
-                )
-                spread_cost = self.k_cost * num_p_uld
-                total_cost = delay_cost + spread_cost
+        best_split_value, best_split_packages, best_split_uld_splits = best_result
 
-                # if the cost of the local best split is less than the best split value, update the best split
-                if total_cost < best_split_value:
-                    best_split_value = total_cost
-                    best_split_packages = local_best_split_packages
-                    best_split_uld_splits = local_best_split_uld_splits
-
-            if self.debug:
-                logging.info(f"Current best split: {best_split_value}")
+        if self.debug:
+            logging.info(f"Best split value: {best_split_value}")
+            logging.info(f"Best split packages: {best_split_packages}")
+            logging.info(
+                f"Best split ULD splits: {len(best_split_uld_splits[0])}, {len(best_split_uld_splits[1])}"
+            )
 
         # get the final partition of packages
         partition_1 = [
