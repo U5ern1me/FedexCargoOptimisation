@@ -17,17 +17,17 @@ config = load_config(
 class Genetic3DBinPackingStrategy(Strategy):
     async def solve(self):
 
-        inputs = {"packages": self.packages, "ulds": self.ulds}
+        inputs = {
+            "packages": self.packages,
+            "ulds": self.ulds,
+            "k_cost": self.k_cost,
+        }
 
         model = Genetic3DBinPacking(
             inputs,
             num_generations=config["number of generations"],
             num_individuals=config["number of individuals"],
             mutation_bracket_size=config["mutation bracket size"],
-            min_1=config["min 1"],
-            max_1=config["max 1"],
-            min_2=config["min 2"],
-            max_2=config["max 2"],
             solver=config["solver"],
             eliteCProb=config["probability of choosing elite gene"],
         )

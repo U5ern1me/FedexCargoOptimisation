@@ -129,6 +129,207 @@ def virtual_fit_priority(
     return True
 
 
+def calculate_min_1_max_2(packages: List[Package], ulds: List[ULD]) -> Tuple[int, int]:
+    """
+    Calculate the minimum number of economy packages that can be packed in the economy ulds and the maximum number of priority packages that can be packed in the priority ulds.
+
+    Args:
+        packages: List of packages
+        ulds: List of ULDs
+
+    Returns:
+        Tuple[int, int]: (min_1, max_2)
+    """
+    priority_packages = [pkg for pkg in packages if pkg.priority == 1]
+    economy_packages = [pkg for pkg in packages if pkg.priority == 0]
+
+    priority_packages_volume = sum(
+        pkg.length * pkg.width * pkg.height for pkg in priority_packages
+    )
+    priority_packages_weight = sum(pkg.weight for pkg in priority_packages)
+
+    uld_volume = 0
+    uld_weight = 0
+
+    ulds = sorted(ulds, key=lambda x: x.length * x.width * x.height, reverse=True)
+
+    for i in range(len(ulds)):
+        if (
+            uld_volume >= priority_packages_volume
+            and uld_weight >= priority_packages_weight
+        ):
+            break
+        uld_volume += ulds[i].length * ulds[i].width * ulds[i].height
+        uld_weight += ulds[i].weight_limit
+
+    economy_packages = sorted(
+        economy_packages, key=lambda x: (x.length * x.width * x.height)
+    )
+
+    for j in range(len(economy_packages)):
+        uld_volume -= (
+            economy_packages[j].length
+            * economy_packages[j].width
+            * economy_packages[j].height
+        )
+        uld_weight -= economy_packages[j].weight
+        if (
+            uld_volume < priority_packages_volume
+            and uld_weight < priority_packages_weight
+        ):
+            break
+
+    uld_volume = sum(uld.length * uld.width * uld.height for uld in ulds[i:])
+    uld_weight = sum(uld.weight_limit for uld in ulds[i:])
+
+    economy_packages = sorted(
+        economy_packages[j:],
+        key=lambda x: (x.length * x.width * x.height),
+        reverse=True,
+    )
+
+    for k in range(len(economy_packages)):
+        uld_volume -= (
+            economy_packages[k].length
+            * economy_packages[k].width
+            * economy_packages[k].height
+        )
+        uld_weight -= economy_packages[k].weight
+        if uld_volume < 0 and uld_weight < 0:
+            break
+
+    return k, j
+
+
+def calculate_max_1_min_2(packages: List[Package], ulds: List[ULD]) -> Tuple[int, int]:
+    """
+    Calculate the maximum number of economy packages that can be packed in the economy ulds and the minimum number of priority packages that can be packed in the priority ulds.
+
+    Args:
+        packages: List of packages
+        ulds: List of ULDs
+
+    Returns:
+        Tuple[int, int]: (max_1, min_2)
+    """
+    priority_packages = [pkg for pkg in packages if pkg.priority == 1]
+    economy_packages = [pkg for pkg in packages if pkg.priority == 0]
+
+    priority_packages_volume = sum(
+        pkg.length * pkg.width * pkg.height for pkg in priority_packages
+    )
+    priority_packages_weight = sum(pkg.weight for pkg in priority_packages)
+
+    uld_volume = 0
+    uld_weight = 0
+
+    ulds = sorted(ulds, key=lambda x: x.length * x.width * x.height)
+
+    for i in range(len(ulds)):
+        if (
+            uld_volume >= priority_packages_volume
+            and uld_weight >= priority_packages_weight
+        ):
+            break
+        uld_volume += ulds[i].length * ulds[i].width * ulds[i].height
+        uld_weight += ulds[i].weight_limit
+
+    economy_packages = sorted(
+        economy_packages, key=lambda x: (x.length * x.width * x.height), reverse=True
+    )
+
+    for j in range(len(economy_packages)):
+        uld_volume -= (
+            economy_packages[j].length
+            * economy_packages[j].width
+            * economy_packages[j].height
+        )
+        uld_weight -= economy_packages[j].weight
+        if (
+            uld_volume < priority_packages_volume
+            and uld_weight < priority_packages_weight
+        ):
+            break
+
+    uld_volume = sum(uld.length * uld.width * uld.height for uld in ulds[i:])
+    uld_weight = sum(uld.weight_limit for uld in ulds[i:])
+
+    economy_packages = sorted(
+        economy_packages[j:], key=lambda x: (x.length * x.width * x.height)
+    )
+
+    for k in range(len(economy_packages)):
+        uld_volume -= (
+            economy_packages[k].length
+            * economy_packages[k].width
+            * economy_packages[k].height
+        )
+        uld_weight -= economy_packages[k].weight
+        if uld_volume < 0 and uld_weight < 0:
+            break
+
+    return k, j
+
+
+def calculate_best_score(packages: List[Package], ulds: List[ULD], k_cost: int) -> int:
+    """
+    Calculate the theoretical best score for the given packages and ulds.
+    """
+    sorted_packages = sorted(
+        packages,
+        key=lambda x: x.delay_cost / (x.length * x.width * x.height),
+        reverse=True,
+    )
+    total_cost_by_volume = 0
+    total_volume = sum(uld.length * uld.width * uld.height for uld in ulds)
+    for pkg in sorted_packages:
+        if total_volume >= pkg.length * pkg.width * pkg.height:
+            total_volume -= pkg.length * pkg.width * pkg.height
+        else:
+            total_cost_by_volume += pkg.delay_cost
+
+    sorted_packages = sorted(
+        packages, key=lambda x: x.delay_cost / x.weight, reverse=True
+    )
+    total_cost_by_weight = 0
+    total_weight = sum(uld.weight_limit for uld in ulds)
+    for pkg in sorted_packages:
+        if total_weight >= pkg.weight:
+            total_weight -= pkg.weight
+        else:
+            total_cost_by_weight += pkg.delay_cost
+
+    priority_weight = sum(pkg.weight for pkg in packages if pkg.priority == 1)
+    priority_volume = sum(
+        pkg.length * pkg.width * pkg.height for pkg in packages if pkg.priority == 1
+    )
+
+    sorted_ulds_volume = sorted(
+        ulds, key=lambda x: x.length * x.width * x.height, reverse=True
+    )
+    num_ulds_volume = 0
+    for uld in sorted_ulds_volume:
+        if priority_volume >= 0:
+            priority_volume -= uld.length * uld.width * uld.height
+            num_ulds_volume += 1
+        else:
+            break
+
+    sorted_ulds_weight = sorted(ulds, key=lambda x: x.weight_limit, reverse=True)
+    num_ulds_weight = 0
+    for uld in sorted_ulds_weight:
+        if priority_weight >= 0:
+            priority_weight -= uld.weight_limit
+            num_ulds_weight += 1
+        else:
+            break
+
+    return (
+        min(total_cost_by_volume, total_cost_by_weight)
+        + max(num_ulds_volume, num_ulds_weight) * k_cost
+    )
+
+
 class Genetic3DBinPacking:
     def __init__(
         self,
@@ -137,26 +338,22 @@ class Genetic3DBinPacking:
         num_generations: int = 200,
         num_individuals: int = 120,
         mutation_bracket_size: int = 5,
-        min_1: int = 1,
-        max_1: int = 5,
-        min_2: int = 1,
-        max_2: int = 5,
         solver: str = "sardine_can",
         eliteCProb: float = 0.7,
-        best_score: int = 0,
         seed: Optional[int] = None,
     ):
 
-        self.packages: List[Package] = inputs["packages"]
-        self.ulds: List[ULD] = inputs["ulds"]
-        self.num_generations: int = num_generations
-        self.num_individuals: int = num_individuals
-        self.best_score: int = best_score
+        self.packages = inputs["packages"]
+        self.ulds = inputs["ulds"]
+        self.k_cost = inputs["k_cost"]
+        self.num_generations = num_generations
+        self.num_individuals = num_individuals
+        self.best_score = calculate_best_score(self.packages, self.ulds, self.k_cost)
 
         # Separate priority and economy packages
-        self.priority_packages: List[Package] = []
-        self.economy_packages: List[Package] = []
-        self.package_map: Dict[str, Package] = {}
+        self.priority_packages = []
+        self.economy_packages = []
+        self.package_map = {}
         for package in self.packages:
             if package.priority == 1:
                 self.priority_packages.append(package)
@@ -170,27 +367,25 @@ class Genetic3DBinPacking:
         self.solver = solvers[solver]
 
         # Mapping from package ID to index for fast access
-        self.package_id_to_index: Dict[str, int] = {
+        self.package_id_to_index = {
             package.id: i for i, package in enumerate(self.economy_packages)
         }
 
         # Number of genes corresponds to the number of economy packages
-        self.num_genes: int = len(self.economy_packages)
+        self.num_genes = len(self.economy_packages)
 
         # Total economic cost
-        self.total_economic_cost: int = sum(
+        self.total_economic_cost = sum(
             package.delay_cost for package in self.economy_packages
         )
 
-        self.mutation_bracket_size: int = mutation_bracket_size
-        self.eliteCProb: float = eliteCProb
+        self.mutation_bracket_size = mutation_bracket_size
+        self.eliteCProb = eliteCProb
 
-        self.min_1: int = min_1
-        self.max_1: int = max_1
-        self.min_2: int = min_2
-        self.max_2: int = max_2
+        self.min_1, self.max_2 = calculate_min_1_max_2(self.packages, self.ulds)
+        self.max_1, self.min_2 = calculate_max_1_min_2(self.packages, self.ulds)
 
-        self.mutation_probs: np.ndarray = np.array([0.01, 0.02, 0.03, 0.04])
+        self.mutation_probs = np.array([0.01, 0.02, 0.03, 0.04])
 
         # Initialize seed
         if seed is not None:
@@ -201,17 +396,25 @@ class Genetic3DBinPacking:
         random.seed(self.seed)
         np.random.seed(self.seed)
 
-    async def get_best_ulds(self) -> List[str]:
+    async def get_best_ulds(self) -> Tuple[List[ULD], List[ULD]]:
+        """
+        Get the best ulds for packing the priority packages.
 
+        Returns:
+            Tuple of two lists of ULDs
+        """
         uld_splits_arr = get_all_division_of_ulds(self.ulds, 1)
 
         async with aiohttp.ClientSession() as session:
             for uld_split in uld_splits_arr:
                 uld_group_1, uld_group_2 = split_ulds_into_two(self.ulds, uld_split[0])
+
+                # check if weight or volume constraints are violated
                 if virtual_fit_priority(self.priority_packages, uld_group_1):
+
+                    # if not violated, check if the priority packages are packed correctly using the solver
                     solver = self.solver(uld_group_1, self.priority_packages)
                     await solver.solve(session=session)
-                    # solution = await solver._get_result(session=session)
                     solution = await solver.get_packing_json(session=session)
                     is_valid, _ = await self.check_validity(solution)
                     if is_valid:
@@ -220,6 +423,9 @@ class Genetic3DBinPacking:
     async def adjust_individual(self, individual: np.ndarray) -> np.ndarray:
         """
         Adjust an individual's genes to satisfy the constraints on gene counts.
+
+        Args:
+            individual: Individual to adjust
 
         Returns:
             np.ndarray: Adjusted individual
@@ -259,6 +465,12 @@ class Genetic3DBinPacking:
     ) -> None:
         """
         Helper method to set a specified number of genes from 'current' to 'new'.
+
+        Args:
+            individual: Individual to set genes
+            count: Number of genes to set
+            current: Current gene value
+            new: New gene value
         """
         indices = np.where(individual == current)[0]
         if len(indices) == 0:
@@ -274,11 +486,14 @@ class Genetic3DBinPacking:
         """
         Check if all priority packages are packed correctly.
 
+        Args:
+            packing: Packing solution
+
         Returns:
             Tuple[bool, Optional[List[str]]]: (IsValid, List of Economy Package IDs in Priority ULDs)
         """
-        economy_packages_in_priority_ulds: List[str] = []
-        cnt_priority_packed: int = 0
+        economy_packages_in_priority_ulds = []
+        cnt_priority_packed = 0
         for _uld in packing.get("ulds", []):
             for package_id in _uld.get("packages", []):
                 if self.package_map[package_id].priority == 1:
@@ -299,6 +514,14 @@ class Genetic3DBinPacking:
     ) -> np.ndarray:
         """
         Rectify an individual's genes to ensure valid packing.
+
+        Args:
+            individual: Individual to rectify
+            priority_ulds: List of priority ULDs
+            session: aiohttp.ClientSession
+
+        Returns:
+            Rectified individual
         """
         economy_to_pack = self.economy_packages[individual == 2]
 
@@ -308,16 +531,14 @@ class Genetic3DBinPacking:
             key=lambda x: x.delay_cost / (x.length * x.width * x.height),
         )
 
-        pos_economy_id: set = set((i, pkg.id) for i, pkg in enumerate(economy_sorted))
-        id_to_index: Dict[str, int] = {
-            pkg.id: i for i, pkg in enumerate(economy_sorted)
-        }
+        pos_economy_id = set((i, pkg.id) for i, pkg in enumerate(economy_sorted))
+        id_to_index = {pkg.id: i for i, pkg in enumerate(economy_sorted)}
 
         num_economy = len(economy_sorted)
 
         lower_bound = self.min_2
         upper_bound = min(self.max_2, num_economy)
-        economy_packed: Optional[List[str]] = None
+        economy_packed = None
 
         # Binary search to find the maximum number of economy packages that can be packed
         while lower_bound <= upper_bound:
@@ -329,7 +550,6 @@ class Genetic3DBinPacking:
 
             solver = self.solver(priority_ulds, packages_to_pack)
             await solver.solve(session=session)
-            # solution = await solver._get_result(session=session)
             solution = await solver.get_packing_json(session=session)
 
             is_valid, packed = await self.check_validity(solution)
@@ -362,10 +582,14 @@ class Genetic3DBinPacking:
         """
         Calculate the cost of an individual based on the packing.
 
+        Args:
+            individual: Individual to calculate cost
+            packing: Packing solution
+
         Returns:
             int: The fitness cost.
         """
-        cost_of_fitted: int = np.sum(
+        cost_of_fitted = np.sum(
             [pkg.delay_cost for pkg in self.economy_packages[individual == 2]]
         )
         for _uld in packing.get("ulds", []):
@@ -373,33 +597,15 @@ class Genetic3DBinPacking:
                 cost_of_fitted += self.package_map[package_id].delay_cost
         return self.total_economic_cost - cost_of_fitted
 
-    async def evaluate_individual_fitness(
-        self,
-        individual_index: int,
-        individual: np.ndarray,
-        economy_ulds: np.ndarray,
-        session: aiohttp.ClientSession,
-    ) -> Tuple[int, dict]:
-        """
-        Evaluate the fitness of a single individual.
-
-        Returns:
-            Tuple[int, dict]: (Cost, Packing Solution)
-        """
-        chosen_packages = self.economy_packages[individual == 1]
-        solver = self.solver(economy_ulds, chosen_packages)
-        await solver.solve(session=session)
-        # solution = await solver._get_result(session=session)
-        solution = await solver.get_packing_json(session=session)
-        cost = await self.calculate_cost(individual, solution)
-        logging.info(f"Individual: {individual_index}, Cost: {cost}")
-        return (cost, solution)
-
     async def calculate_fitness(
         self, population: np.ndarray, economy_ulds: np.ndarray
     ) -> Tuple[np.ndarray, List[dict]]:
         """
         Calculate fitness for the entire population.
+
+        Args:
+            population: Population to calculate fitness
+            economy_ulds: List of economy ULDs
 
         Returns:
             Tuple[np.ndarray, List[dict]]: (Costs Array, Solutions List)
@@ -430,13 +636,25 @@ class Genetic3DBinPacking:
                 for individual, packing_response in zip(population, packing_responses)
             ]
 
-        costs = np.array([cost for cost, _ in fitness_list])
+        costs = np.array(
+            [
+                cost + (len(self.ulds) - len(economy_ulds)) * self.k_cost
+                for cost, _ in fitness_list
+            ]
+        )
         solutions = [solution for _, solution in fitness_list]
         return costs, solutions
 
     async def crossover(self, parent1: np.ndarray, parent2: np.ndarray) -> np.ndarray:
         """
         Perform crossover between two parents to produce an offspring.
+
+        Args:
+            parent1: First parent
+            parent2: Second parent
+
+        Returns:
+            Offspring
         """
         mask = np.random.rand(self.num_genes) < self.eliteCProb
         offspring = np.where(mask, parent1, parent2)
@@ -447,6 +665,13 @@ class Genetic3DBinPacking:
     ) -> np.ndarray:
         """
         Perform mating to produce offspring based on fitness.
+
+        Args:
+            population: Population to mate
+            fitness_costs: Fitness costs of the population
+
+        Returns:
+            Offspring
         """
         # Calculate selection probabilities
         with np.errstate(divide="ignore"):
@@ -487,11 +712,18 @@ class Genetic3DBinPacking:
     ) -> np.ndarray:
         """
         Mutate a single individual based on mutation probability.
+
+        Args:
+            individual: Individual to mutate
+            mutation_prob: Mutation probability
+
+        Returns:
+            Mutated individual
         """
         mutation_mask = np.random.rand(self.num_genes) < mutation_prob
         # Define mutation choices based on current gene values
-        mutation_choices = np.random.choice([0, 1, 2], size=self.num_genes)
         mutated_individual = np.copy(individual)
+
         # Apply mutations where mask is True
         for gene_idx in np.where(mutation_mask)[0]:
             current_gene = mutated_individual[gene_idx]
@@ -506,6 +738,12 @@ class Genetic3DBinPacking:
     async def mutate(self, population: np.ndarray) -> np.ndarray:
         """
         Perform mutation on the entire population.
+
+        Args:
+            population: Population to mutate
+
+        Returns:
+            Mutated population
         """
         num_brackets = self.num_individuals // self.mutation_bracket_size
         tasks = []
@@ -524,6 +762,10 @@ class Genetic3DBinPacking:
     async def fit(self, patience: int, verbose: bool = True):
         """
         Run the genetic algorithm to find the best packing solution.
+
+        Args:
+            patience: Patience for early stopping
+            verbose: Whether to print logs
         """
         # Initialize population with random genes (0, 1, 2)
         population = np.random.randint(3, size=(self.num_individuals, self.num_genes))
