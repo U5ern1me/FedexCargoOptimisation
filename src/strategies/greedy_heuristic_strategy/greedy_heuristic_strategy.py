@@ -116,27 +116,28 @@ class GreedyHeuristicStrategy(Strategy):
                     local_best_split_packages = splits
                     local_best_split_uld_splits = (uld_group_1, uld_group_2)
 
-                if self.debug:
-                    logging.info(f"Found local best split: {local_best_split_packages}")
+                    if self.debug:
+                        logging.info(
+                            f"Found local best split: {local_best_split_packages}"
+                        )
 
-                # calculate the cost of the local best split
-                delay_cost = sum(
-                    [
-                        package.delay_cost
-                        for package in sorted_economic_packages[
-                            local_best_split_packages[0]
-                            + local_best_split_packages[1] :
-                        ]
+            # calculate the cost of the local best split
+            delay_cost = sum(
+                [
+                    package.delay_cost
+                    for package in sorted_economic_packages[
+                        local_best_split_packages[0] + local_best_split_packages[1] :
                     ]
-                )
-                spread_cost = self.k_cost * num_p_uld
-                total_cost = delay_cost + spread_cost
+                ]
+            )
+            spread_cost = self.k_cost * num_p_uld
+            total_cost = delay_cost + spread_cost
 
-                # if the cost of the local best split is less than the best split value, update the best split
-                if total_cost < best_split_value:
-                    best_split_value = total_cost
-                    best_split_packages = local_best_split_packages
-                    best_split_uld_splits = local_best_split_uld_splits
+            # if the cost of the local best split is less than the best split value, update the best split
+            if total_cost < best_split_value:
+                best_split_value = total_cost
+                best_split_packages = local_best_split_packages
+                best_split_uld_splits = local_best_split_uld_splits
 
             if self.debug:
                 logging.info(f"Current best split: {best_split_value}")
