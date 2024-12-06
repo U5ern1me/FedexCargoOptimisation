@@ -34,7 +34,7 @@ class GreedyHeuristicStrategy(Strategy):
         )
 
         # initialize solver
-        solver = solvers[config["solver"]]
+        solver = solvers[os.environ.get("SOLVER", config["solver"])]
 
         if self.debug:
             logging.info(f"using solver: {solver.__name__}")

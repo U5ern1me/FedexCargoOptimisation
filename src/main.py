@@ -11,6 +11,7 @@ import logging
 from utils.io import read_ulds, read_packages, read_k, write_output, load_config
 from utils.visualizer import visualize
 from strategies import strategies
+from utils.api_error import APIError
 
 config = load_config(os.path.join(os.path.dirname(__file__), "main.config"))
 
@@ -72,6 +73,20 @@ async def main():
     strategy = SelectedStrategy(ulds=ulds, packages=packages, k_cost=k)
     try:
         await strategy.run()
+    except APIError as e:
+        logging.error(f"Solver error: {e}")
+        print(f"Solver error: {e}")
+        print(f"You can check the log file at {log_path} for more information")
+        check = input("Do you want to restart using sardine_can solver (y/n): ")
+        if check == "y":
+            if args.debug:
+                logging.info("Restarting using sardine_can solver")
+            strategy.reset()
+            os.environ["SOLVER"] = "sardine_can"
+            await strategy.run()
+        else:
+            strategy.end()
+            exit()
     except Exception as e:
         logging.error(f"Error in strategy: {e}")
         raise e

@@ -131,6 +131,8 @@ class SardineCanSolver(Solver):
                 return await response.json()
 
         # to be checked
+        except APIError as e:
+            raise APIError(f"API error with sardine can solver: {e}")
         except aiohttp.ClientConnectionResetError as e:
             raise APIError(f"Connection reset error with sardine can solver: {e}")
         except aiohttp.ClientConnectionError as e:
