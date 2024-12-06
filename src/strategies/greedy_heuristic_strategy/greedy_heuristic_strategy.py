@@ -66,7 +66,7 @@ class GreedyHeuristicStrategy(Strategy):
 
         tasks = []
         results = []
-        task_threshold = 5
+        task_threshold = 7
         best_cost = float("inf")
 
         for num_p_uld, uld_splits in enumerate(uld_splits_arr):
