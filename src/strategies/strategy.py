@@ -43,9 +43,10 @@ class Strategy(ABC):
 
         self.solution_found = False
         self.time_start = time.time()
+        self.time_end = -1
 
         # to check logging
-        self.debug = int(os.environ["DEBUG"])
+        self.debug = int(os.environ.get("DEBUG", "0"))
 
     async def get_allocation(
         self,
@@ -215,7 +216,8 @@ class Strategy(ABC):
         """
         for package in self.packages:
             if package.priority and package.uld_id is None:
-                self.error = f"Priority Package {package.id} not allocated"
+                # self.error = f"Priority Package {package.id} not allocated"
+                self.error = "All priority packages cannot be allocated in given ULDs"
                 return False
 
         uld_package_map = {}
@@ -398,3 +400,15 @@ class Strategy(ABC):
             "volume_efficiency": (packed_volume / uld_volume),
             "weight_efficiency": (packed_weight / uld_weight),
         }
+
+    def end(self):
+        self.time_end = time.time()
+
+    def reset(self):
+        self.time_start = time.time()
+        self.time_end = -1
+        self.solution_found = False
+        for package in self.packages:
+            package.uld_id = None
+            package.point1 = (-1, -1, -1)
+            package.point2 = (-1, -1, -1)

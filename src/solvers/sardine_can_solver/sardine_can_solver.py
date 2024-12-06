@@ -14,6 +14,7 @@ from utils.io import load_config
 from typing import Dict, Any, List
 from models.package import Package
 from models.uld import ULD
+from utils.api_error import APIError
 
 config = load_config(os.path.join(os.path.dirname(__file__), "sardine_can.config"))
 
@@ -78,6 +79,9 @@ class SardineCanSolver(Solver):
         packages = [self.get_package_data(package) for package in self.packages]
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
 
+        if len(packages) == 0 or len(ulds) == 0:
+            return
+
         request_body = {
             "configuration": {
                 "goal": config["goal"],
@@ -94,9 +98,18 @@ class SardineCanSolver(Solver):
         }
 
         async with session.post(request_url, json=request_body) as response:
+            if response.status != 200:
+                res_text = await response.text()
+                raise APIError(res_text)
+
             self.response = await response.json()
 
     async def _get_result(self, session: aiohttp.ClientSession = None):
+        if len(self.packages) == 0 or len(self.ulds) == 0:
+            return {
+                "containers": [],
+            }
+
         try:
             if self.response is None:
                 raise Exception("No response from sardine can solver")
@@ -116,6 +129,20 @@ class SardineCanSolver(Solver):
 
             async with session.get(result_url) as response:
                 return await response.json()
+
+        # to be checked
+        except APIError as e:
+            raise APIError(f"API error with sardine can solver: {e}")
+        except aiohttp.ClientConnectionResetError as e:
+            raise APIError(f"Connection reset error with sardine can solver: {e}")
+        except aiohttp.ClientConnectionError as e:
+            raise APIError(f"Connection error with sardine can solver: {e}")
+        except aiohttp.ClientResponseError as e:
+            raise APIError(f"Response error with sardine can solver: {e}")
+        except aiohttp.ClientTimeout as e:
+            raise APIError(f"Timeout error with sardine can solver: {e}")
+        except aiohttp.ClientError as e:
+            raise APIError(f"API error with sardine can solver: {e}")
         except Exception as e:
             raise Exception(f"Error getting result from sardine can solver: {e}")
 

@@ -23,12 +23,14 @@ class Genetic3DBinPackingStrategy(Strategy):
             "k_cost": self.k_cost,
         }
 
+        solver = os.environ.get("SOLVER", config["solver"])
+
         model = Genetic3DBinPacking(
             inputs,
             num_generations=config["number of generations"],
             num_individuals=config["number of individuals"],
             mutation_bracket_size=config["mutation bracket size"],
-            solver=config["solver"],
+            solver=solver,
             eliteCProb=config["probability of choosing elite gene"],
         )
 

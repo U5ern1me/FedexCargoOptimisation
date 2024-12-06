@@ -282,29 +282,29 @@ async def find_splits_economic_packages(
         await solver_1.solve(only_check_fits=True, session=session)
         could_fit = await solver_1.get_fit(session=session)
         if not could_fit:
+            if verbose:
+                logging.info("Could not fit the priority packages in ULD group 1")
             return None
 
     # binary search for the split point of economic packages
-    lower_bound = 0
+    lower_bound = 1
     upper_bound = len(economic_packages)
 
-    async with aiohttp.ClientSession() as session:
-        while upper_bound - lower_bound > 1:
-            mid = (upper_bound + lower_bound) // 2
+    split_1 = 0
 
-            if mid == lower_bound or mid == upper_bound:
-                break
+    async with aiohttp.ClientSession() as session:
+        while lower_bound <= upper_bound and len(uld_group_1) > 0:
+            mid = (upper_bound + lower_bound) // 2
 
             partition_1 = [*priority_packages, *economic_packages[:mid]]
             solver1 = solver(ulds=uld_group_1, packages=partition_1)
             await solver1.solve(only_check_fits=True, session=session)
             could_fit = await solver1.get_fit(session=session)
             if could_fit:
-                lower_bound = mid
+                split_1 = mid
+                lower_bound = mid + 1
             else:
-                upper_bound = mid
-
-    split_1 = lower_bound
+                upper_bound = mid - 1
 
     if verbose:
         logging.info(f"Found split 1: {split_1}")
@@ -319,27 +319,22 @@ async def find_splits_economic_packages(
         return (split_1, split_2)
 
     # binary search for the split point of economic packages
-    lower_bound = 0
+    lower_bound = 1
     upper_bound = len(remaining_economic_packages)
 
     async with aiohttp.ClientSession() as session:
-        while upper_bound - lower_bound > 1:
+        while lower_bound <= upper_bound:
             mid = (upper_bound + lower_bound) // 2
-
-            if mid == lower_bound or mid == upper_bound:
-                break
 
             partition_2 = remaining_economic_packages[:mid]
             solver2 = solver(ulds=uld_group_2, packages=partition_2)
             await solver2.solve(only_check_fits=True, session=session)
             could_fit = await solver2.get_fit(session=session)
             if could_fit:
-                lower_bound = mid
+                split_2 = mid
+                lower_bound = mid + 1
             else:
-                upper_bound = mid
-
-    # the last valid split point of economic packages
-    split_2 = lower_bound
+                upper_bound = mid - 1
 
     if verbose:
         logging.info(f"Found split 2: {split_2}")
