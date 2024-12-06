@@ -23,6 +23,15 @@ def read_packages(file_path: str) -> List[Package]:
     """
     df = pd.read_csv(os.path.join(file_path, "package.csv"))
     packages = []
+
+    if df["Package Identifier"].duplicated().any():
+        duplicate_ids = df[df["Package Identifier"].duplicated()][
+            "Package Identifier"
+        ].tolist()
+        raise ValueError(
+            f"Duplicate package identifiers found: {', '.join(duplicate_ids)}"
+        )
+
     for _, row in df.iterrows():
         priority = 0
         if row["Type"] == "Priority":
@@ -55,6 +64,11 @@ def read_ulds(file_path: str) -> List[ULD]:
     """
     df = pd.read_csv(os.path.join(file_path, "uld.csv"))
     ulds = []
+
+    if df["ULD Identifier"].duplicated().any():
+        duplicate_ids = df[df["ULD Identifier"].duplicated()]["ULD Identifier"].tolist()
+        raise ValueError(f"Duplicate ULD identifiers found: {', '.join(duplicate_ids)}")
+
     for _, row in df.iterrows():
         ulds.append(
             ULD(
@@ -99,7 +113,7 @@ def write_output(
             rows.append(
                 {
                     "Package Identifier": row[0],
-                    "ULD Identifier": row[1],
+                    "ULD Identifier": row[1] if row[1] is not None else "None",
                     "x1": row[2][0],
                     "y1": row[2][1],
                     "z1": row[2][2],
@@ -109,7 +123,7 @@ def write_output(
                 }
             )
             f.write(
-                f"{row[0]},{row[1] if row[1] is not None else "NONE"},{row[2][0]},{row[2][1]},{row[2][2]},{row[3][0]},{row[3][1]},{row[3][2]}\n"
+                f"{row[0]},{row[1] if row[1] is not None else 'NONE'},{row[2][0]},{row[2][1]},{row[2][2]},{row[3][0]},{row[3][1]},{row[3][2]}\n"
             )
 
     # Convert the list of rows into a DataFrame
