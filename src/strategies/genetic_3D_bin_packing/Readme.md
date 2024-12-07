@@ -14,8 +14,7 @@ To run the Genetic Algorithm and solve the 3D Bin Packing Problem, follow the st
 Ensure that the `main.config` file is correctly set up by setting the `default_strategy` to `genetic_algorithm`. This will configure the optimizer to use the Genetic Algorithm approach.
 
 ### Method 2: Using the command line
-```
-bash
+```bash
 python src/main.py -s genetic_algorithm -d -v
 ```
 
