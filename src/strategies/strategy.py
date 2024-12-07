@@ -202,11 +202,11 @@ class Strategy(ABC):
                 break
 
         if not final_found:
-            return
+            return False
 
         for package in self.packages:
             if package.id not in package_map:
-                return
+                return False
 
             s = data["solution"][package_map[package.id]]
 
@@ -215,6 +215,8 @@ class Strategy(ABC):
             )
             package.point1 = s["point1"]
             package.point2 = s["point2"]
+
+        return True
 
     async def get_outputs(self) -> Tuple[
         List[Tuple[str, Optional[str], Tuple[int, int, int], Tuple[int, int, int]]],
@@ -425,18 +427,18 @@ class Strategy(ABC):
                 {
                     "id": package.id,
                     "uld_id": package.uld_id,
-                    "x1": package.point1[0],
-                    "y1": package.point1[1],
-                    "z1": package.point1[2],
-                    "x2": package.point2[0],
-                    "y2": package.point2[1],
-                    "z2": package.point2[2],
-                    "height": package.height,
-                    "width": package.width,
-                    "length": package.length,
+                    "x1": float(package.point1[0]),
+                    "y1": float(package.point1[1]),
+                    "z1": float(package.point1[2]),
+                    "x2": float(package.point2[0]),
+                    "y2": float(package.point2[1]),
+                    "z2": float(package.point2[2]),
+                    "height": float(package.height),
+                    "width": float(package.width),
+                    "length": float(package.length),
                     "priority": package.priority,
-                    "delay_cost": package.delay_cost,
-                    "weight": package.weight,
+                    "delay_cost": float(package.delay_cost),
+                    "weight": float(package.weight),
                 }
             )
 
@@ -503,9 +505,9 @@ class Strategy(ABC):
 
         return {
             "allocation": allocation,
-            "total_cost": cost,
-            "delay_cost": cost - num_priority_ulds * self.k_cost,
-            "priority_cost": num_priority_ulds * self.k_cost,
+            "total_cost": float(cost),
+            "delay_cost": float(cost - num_priority_ulds * self.k_cost),
+            "priority_cost": float(num_priority_ulds * self.k_cost),
             "total_packed_packages": total_packed_packages,
             "total_packed_priority_packages": total_priority_packages,
             "total_packed_economy_packages": total_packed_packages
@@ -513,10 +515,10 @@ class Strategy(ABC):
             "num_priority_ulds": num_priority_ulds,
             "total_unpacked_packages": len(self.packages) - total_packed_packages,
             "ulds": ulds,
-            "packed_volume": packed_volume,
-            "packed_weight": packed_weight,
-            "volume_efficiency": (packed_volume / uld_volume),
-            "weight_efficiency": (packed_weight / uld_weight),
+            "packed_volume": float(packed_volume),
+            "packed_weight": float(packed_weight),
+            "volume_efficiency": float(packed_volume / uld_volume),
+            "weight_efficiency": float(packed_weight / uld_weight),
         }
 
     def end(self):
