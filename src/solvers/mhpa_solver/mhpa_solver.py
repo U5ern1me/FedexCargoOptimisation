@@ -106,6 +106,18 @@ class MHPASolver(Solver):
                 "timeLimitInSeconds": config["time limit"],
                 "iterationsLimit": config["iteration limit"],
                 "type": config["packing type"],
+                "handleGravity": bool(config["handle gravity"]),
+                "handleRotatability": bool(config["handle rotatability"]),
+                "handleStackability": bool(config["handle stackability"]),
+                "handleCompatibility": bool(config["handle compatibility"]),
+                "handleForbiddenOrientations": bool(config["handle forbidden orientations"]),
+                "pieceOrder": config["piece order"],
+                "improvement": bool(config["improvement"]),
+                "bestFit": bool(config["best fit"]),
+                "scoreBasedOrder": bool(config["score based order"]),
+                "meritType": config["merit type"],
+                "randomSalt": config["random salt"],
+                "stagnationDistance": config["stagnation distance"]
             },
             "priority": 1,
             "instance": {
