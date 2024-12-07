@@ -135,5 +135,3 @@ The configuration file is crucial for customizing the solver and tuning the pack
 ---
 
 
-- The packing heuristics and solver were inspired by industry best practices for logistics and transportation.
-- Special thanks to the open-source community for the development of 3D bin packing algorithms.
