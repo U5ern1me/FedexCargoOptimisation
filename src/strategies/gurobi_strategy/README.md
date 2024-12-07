@@ -22,7 +22,7 @@ To run the strategy, obtain a [Gurobi License](https://support.gurobi.com/hc/en-
 ## Configuration
 The `gurobi.config` file can be modified to configure the strategy.
 
-```json
+```
 {
     "output flag": 0 | 1 | 2, //The output flag for the Gurobi strategy
     "numeric focus": 0 | 1 | 2, //The numeric focus for the Gurobi strategy

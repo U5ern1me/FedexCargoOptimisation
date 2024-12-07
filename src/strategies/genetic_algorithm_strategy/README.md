@@ -23,7 +23,7 @@ python src/main.py -s genetic_algorithm -d -v
 ## Configuration
 The `drl.config` file can be modified to configure the strategy.
 
-```json
+```
 {
     "number of generations" : integer, // The number of generations to run the Genetic Algorithm
     "number of individuals": integer, //The number of individuals in the population

@@ -23,7 +23,7 @@ To run the strategy, install [Hexaly Optimizer](https://www.hexaly.com/docs/last
 ## Configuration
 The `hexaly.config` file can be modified to configure the strategy.
 
-```json
+```
 {
     "total_timesteps": integer //Total number of timesteps (in seconds) to train the model.
 }

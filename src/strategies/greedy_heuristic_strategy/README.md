@@ -18,7 +18,7 @@ python src/main.py -s greedy_heuristic -d -v
 The `greedy_heuristic.config` file can be modified to configure the strategy.
  
 
-```json
+```
 {
     "solver": "mhpa" | "threeD_bin_packing", //Specifies the solver to use for packing
     "error tuning": integer //A parameter to control the flexibility in fitting packages into the ULDs during Retroactive Allocation

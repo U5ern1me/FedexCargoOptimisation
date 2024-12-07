@@ -21,7 +21,7 @@ python src/main.py -s drl -d -v
 ## Configuration
 The `drl.config` file can be modified to configure the strategy.
 
-```json
+```
 {
     "model_name": "PPO" | "A2C", //The model to use for the DRL strategy.
     "total_timesteps": integer, //The total number of timestamps to train the model

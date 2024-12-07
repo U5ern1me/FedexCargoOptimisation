@@ -22,7 +22,7 @@ python src/main.py -s brkga -d -v
 ## Configuration
 The `brkga.config` file can be modified to configure the strategy.
 
-```json
+```
 {
     "number of generations" : integer, //The total number of generations to run the algorithm
     "number of individuals": integer, //The number of individuals in the population
