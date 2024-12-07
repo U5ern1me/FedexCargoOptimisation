@@ -39,4 +39,5 @@ class GeneticAlgorithmStrategy(Strategy):
 
         await model.fit(config["number of stable generations"], verbose=True)
 
-        await self.post_process()
+        if int(os.environ.get("CACHE", "0")):
+            await self.post_process()

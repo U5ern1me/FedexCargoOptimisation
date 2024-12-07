@@ -39,6 +39,12 @@ async def main():
         action="store_true",
         help="Visualize the solution",
     )
+    parser.add_argument(
+        "--cache",
+        "-c",
+        action="store_true",
+        help="Do not load cached data",
+    )
     args = parser.parse_args()
 
     # Create output folder if it doesn't exist
@@ -59,6 +65,11 @@ async def main():
         os.environ["DEBUG"] = "1"
     else:
         os.environ["DEBUG"] = "0"
+
+    if args.cache:
+        os.environ["CACHE"] = "0"
+    else:
+        os.environ["CACHE"] = "1"
 
     logging.basicConfig(
         level=logging.INFO,
