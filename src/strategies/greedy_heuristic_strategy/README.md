@@ -24,7 +24,17 @@ This repository implements a **Greedy Heuristic Strategy** for solving the **3D 
 ```bash
 pip install -r requirements.txt
 ```
+## How to run
 
+To run the Genetic Algorithm and solve the 3D Bin Packing Problem, follow the steps below:
+
+### Method 1: Modify the Configuration
+Ensure that the `main.config` file is correctly set up by setting the `default_strategy` to `greedy_heuristic`. This will configure the optimizer to use the Genetic Algorithm approach.
+
+### Method 2: Using the command line
+```bash
+python src/main.py -s greedy_heuristic -d -v
+```
 ### Project Structure
 
 The project contains the following files:
@@ -104,15 +114,8 @@ Once the optimal split and packing strategy is determined, the solver is invoked
 
 The configuration file is crucial for customizing the solver and tuning the packing process. Here is an example configuration:
 
-```json
-{
-    "solver": "threeD_bin_packing",
-    "error tuning": 65
-}
-```
-
-- **solver**: Specifies which solver to use for packing (e.g., `threeD_bin_packing`).
-- **error tuning**: A parameter to control the flexibility in fitting packages into the ULDs (e.g., 65).
+- `solver`(`int`): Specifies which solver to use for packing (e.g., `threeD_bin_packing`).
+- `error tuning`(`int`): A parameter to control the flexibility in fitting packages into the ULDs (e.g., 65).
 
 ---
 
@@ -131,27 +134,6 @@ The configuration file is crucial for customizing the solver and tuning the pack
 
 ---
 
-## Contributing
-
-If you would like to contribute, follow these steps:
-
-1. Fork the repository.
-2. Create a new branch.
-3. Make your changes and add tests.
-4. Push to your forked repository.
-5. Submit a pull request.
-
-Please ensure that your code adheres to the existing coding style and is well-documented.
-
----
-
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
-
----
-
-## Acknowledgments
 
 - The packing heuristics and solver were inspired by industry best practices for logistics and transportation.
 - Special thanks to the open-source community for the development of 3D bin packing algorithms.
