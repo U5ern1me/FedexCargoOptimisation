@@ -46,7 +46,7 @@ class SlicingAlgorithmSolver(Solver):
 
         return updated_df
 
-    async def _solve(self):
+    async def _solve(self,session):
         for uld in self.ulds:
             uld_data = {
                 "ULD no": [uld.id],
@@ -201,7 +201,7 @@ class SlicingAlgorithmSolver(Solver):
 
         return True
 
-    async def get_fit(self) -> bool:
+    async def get_fit(self,session) -> bool:
         """
         Get the result of the solving process
         """
