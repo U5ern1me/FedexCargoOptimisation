@@ -256,7 +256,7 @@ class ThreeDBinPackingSolver(Solver):
 
         for _uld in result["bins_packed"]:
             uld_json = {}
-            uld_json["id"] = self.uld_map[_uld["bin_data"]["id"]].id
+            uld_json["id"] = _uld["bin_data"]["id"]
             uld_json["packages"] = []
             for _package in _uld["items"]:
                 package = self.package_map[_package["id"]]
