@@ -840,5 +840,4 @@ def pack_package(
         [packed_bins_nfdh, packed_bins_ffdh, packed_bins_mra],
         key=lambda bins: len(bins),
     )
-
     return packed_bins
