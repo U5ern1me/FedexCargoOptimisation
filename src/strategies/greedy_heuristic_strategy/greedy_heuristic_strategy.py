@@ -137,7 +137,7 @@ class GreedyHeuristicStrategy(Strategy):
             for package_num, package in enumerate(remaining_packages[:tolerance]):
                 if self.debug:
                     logging.info(
-                        f"Checking package {package_num} of {config['error tuning']} packages"
+                        f"Checking package {package_num+1} of {config['error tuning']} packages"
                     )
 
                 if (
