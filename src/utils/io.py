@@ -35,7 +35,7 @@ def read_packages(file_path: str) -> List[Package]:
 
     for _, row in df.iterrows():
         priority = 0
-        if row["Type"] == "Priority":
+        if row["Type (P/E)"] == "Priority":
             priority = 1
 
         if row["Length (cm)"] == 0 or row["Width (cm)"] == 0 or row["Height (cm)"] == 0:

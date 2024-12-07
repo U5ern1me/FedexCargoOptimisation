@@ -1,4 +1,4 @@
-Package Identifier,Length (cm),Width (cm),Height (cm),Weight (kg),Type,Cost of Delay
+Package Identifier,Length (cm),Width (cm),Height (cm),Weight (kg),Type (P/E),Cost of Delay
 P-1,99,53,55,61,Economy,176
 P-2,56,99,81,53,Priority,-
 P-3,42,101,51,17,Priority,-
