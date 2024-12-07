@@ -4,6 +4,17 @@ Biased Random-Key Genetic Algorithm (BRKGA) is a genetic algorithm that uses bia
 
 We utilized the BRKGA-based algorithm from the [paper](https://www.sciencedirect.com/science/article/pii/S0925527313001837) for the 3D bin packing problem.
 
+## How to run
+
+To run the Genetic Algorithm and solve the 3D Bin Packing Problem, follow the steps below:
+
+### Method 1: Modify the Configuration
+Ensure that the `main.config` file is correctly set up by setting the `default_strategy` to `brkga`. This will configure the optimizer to use the Genetic Algorithm approach.
+
+### Method 2: Using the command line
+```bash
+python src/main.py -s brkga -d -v
+```
 
 
 ### brkga_strategy.py
