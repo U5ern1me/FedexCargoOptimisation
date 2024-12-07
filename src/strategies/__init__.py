@@ -2,7 +2,7 @@
 # from .drl_strategy import DRLStrategy
 # from .hexaly_strategy import HexalyStrategy
 from .brkga_strategy import BRKGAStrategy
-from .genetic_3D_bin_packing import Genetic3DBinPackingStrategy
+from .genetic_algorithm import GeneticAlgorithmStrategy
 from .greedy_heuristic_strategy import GreedyHeuristicStrategy
 
 strategies = {
@@ -10,6 +10,6 @@ strategies = {
     # "gurobi": GurobiStrategy,
     # "hexaly": HexalyStrategy,
     "brkga": BRKGAStrategy,
-    "genetic": Genetic3DBinPackingStrategy,
+    "genetic_algorithm": GeneticAlgorithmStrategy,
     "greedy_heuristic": GreedyHeuristicStrategy,
 }

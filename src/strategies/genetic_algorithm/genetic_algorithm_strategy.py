@@ -5,7 +5,7 @@ import logging
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from strategies.strategy import Strategy
-from .genetic_3D_bin_packing_utils import Genetic3DBinPacking
+from .genetic_algorithm_utils import GeneticAlgorithm
 
 from utils.io import load_config
 
@@ -14,7 +14,7 @@ config = load_config(
 )
 
 
-class Genetic3DBinPackingStrategy(Strategy):
+class GeneticAlgorithmStrategy(Strategy):
     async def solve(self):
 
         inputs = {
@@ -25,7 +25,7 @@ class Genetic3DBinPackingStrategy(Strategy):
 
         solver = os.environ.get("SOLVER", config["solver"])
 
-        model = Genetic3DBinPacking(
+        model = GeneticAlgorithm(
             inputs,
             num_generations=config["number of generations"],
             num_individuals=config["number of individuals"],

@@ -330,7 +330,7 @@ def calculate_best_score(packages: List[Package], ulds: List[ULD], k_cost: int) 
     )
 
 
-class Genetic3DBinPacking:
+class GeneticAlgorithm:
     def __init__(
         self,
         inputs: Dict[str, Any],

@@ -1,1 +1,0 @@
-from .genetic_3D_bin_packing import Genetic3DBinPackingStrategy
