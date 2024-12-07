@@ -514,7 +514,7 @@ class PackagePackerNFDH:
                 packed_bins = packer2d.pack_bins(select_package_list)
 
                 # Generate the diagram for the current packing layer
-                self.generate_diagram(index, current_layer, row, packed_bins)
+                # self.generate_diagram(index, current_layer, row, packed_bins)
 
                 # Add packed bins to the total packed bins list
                 for bin in packed_bins:
@@ -646,7 +646,7 @@ class PackagePackerFFDH:
                 packed_bins = packer2d.pack_bins(select_package_list)
 
                 # Generate the diagram for the current packing layer
-                self.generate_diagram(index, current_layer, row, packed_bins)
+                # self.generate_diagram(index, current_layer, row, packed_bins)
 
                 # Add packed bins to the total packed bins list
                 for bin in packed_bins:
@@ -777,7 +777,7 @@ class PackagePackerMRA:
                 packed_bins = packer2d.pack_bins(select_package_list)
 
                 # Generate the diagram for the current packing layer
-                self.generate_diagram(index, current, row, packed_bins)
+                # self.generate_diagram(index, current, row, packed_bins)
 
                 # Add packed bins to the total packed bins list
                 for bin in packed_bins:
