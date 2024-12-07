@@ -6,7 +6,7 @@ import multiprocessing
 import numpy as np
 import logging
 
-# typing
+# type hinting
 from typing import List, Tuple, Dict, Any, Optional
 from models.package import Package
 from models.uld import ULD

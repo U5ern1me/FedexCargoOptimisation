@@ -2,7 +2,7 @@ from itertools import combinations
 import logging
 import aiohttp
 
-# typing
+# type hinting
 from typing import List, Any, Callable, Tuple
 from models.uld import ULD
 from models.package import Package

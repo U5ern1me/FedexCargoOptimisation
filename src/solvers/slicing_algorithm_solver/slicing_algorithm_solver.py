@@ -9,7 +9,7 @@ from solvers.solver import Solver
 from .slicing_algorithm_utils import pack_package
 import pandas as pd
 
-# typing
+# type hinting
 from models.uld import ULD
 from models.package import Package
 from typing import List, Dict, Any
@@ -78,7 +78,6 @@ class SlicingAlgorithmSolver(Solver):
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
 
-
         for _uld in result.keys():
             for _package in result[_uld]:
                 num_packages -= 1
@@ -90,7 +89,7 @@ class SlicingAlgorithmSolver(Solver):
 
         for _uld in result.keys():
             for package in result[_uld]:
-                uld_id= _uld
+                uld_id = _uld
                 if uld_id not in uld_package_map:
                     uld_package_map[uld_id] = []
                     package = {
@@ -123,33 +122,55 @@ class SlicingAlgorithmSolver(Solver):
 
                 for j in range(i + 1, len(packages)):
                     x1_min, x1_max = min(
-                        packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"]
-                    ), max(packages[i]["coordinates"]["x1"], packages[i]["coordinates"]["x2"])
+                        packages[i]["coordinates"]["x1"],
+                        packages[i]["coordinates"]["x2"],
+                    ), max(
+                        packages[i]["coordinates"]["x1"],
+                        packages[i]["coordinates"]["x2"],
+                    )
                     y1_min, y1_max = min(
-                        packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"]
-                    ), max(packages[i]["coordinates"]["y1"], packages[i]["coordinates"]["y2"])
+                        packages[i]["coordinates"]["y1"],
+                        packages[i]["coordinates"]["y2"],
+                    ), max(
+                        packages[i]["coordinates"]["y1"],
+                        packages[i]["coordinates"]["y2"],
+                    )
                     z1_min, z1_max = min(
-                        packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"]
-                    ), max(packages[i]["coordinates"]["z1"], packages[i]["coordinates"]["z2"])
+                        packages[i]["coordinates"]["z1"],
+                        packages[i]["coordinates"]["z2"],
+                    ), max(
+                        packages[i]["coordinates"]["z1"],
+                        packages[i]["coordinates"]["z2"],
+                    )
 
                     x2_min, x2_max = min(
-                        packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"]
-                    ), max(packages[j]["coordinates"]["x1"], packages[j]["coordinates"]["x2"])
+                        packages[j]["coordinates"]["x1"],
+                        packages[j]["coordinates"]["x2"],
+                    ), max(
+                        packages[j]["coordinates"]["x1"],
+                        packages[j]["coordinates"]["x2"],
+                    )
                     y2_min, y2_max = min(
-                        packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"]
-                    ), max(packages[j]["coordinates"]["y1"], packages[j]["coordinates"]["y2"])
+                        packages[j]["coordinates"]["y1"],
+                        packages[j]["coordinates"]["y2"],
+                    ), max(
+                        packages[j]["coordinates"]["y1"],
+                        packages[j]["coordinates"]["y2"],
+                    )
                     z2_min, z2_max = min(
-                        packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"]
-                    ), max(packages[j]["coordinates"]["z1"], packages[j]["coordinates"]["z2"])
+                        packages[j]["coordinates"]["z1"],
+                        packages[j]["coordinates"]["z2"],
+                    ), max(
+                        packages[j]["coordinates"]["z1"],
+                        packages[j]["coordinates"]["z2"],
+                    )
 
                     x_overlap = max(0, min(x1_max, x2_max) - max(x1_min, x2_min))
                     y_overlap = max(0, min(y1_max, y2_max) - max(y1_min, y2_min))
                     z_overlap = max(0, min(z1_max, z2_max) - max(z1_min, z2_min))
 
                     if x_overlap > 0 and y_overlap > 0 and z_overlap > 0:
-                        self.error = (
-                            f"Packages {packages[i]['id']} and {packages[j]['id']} overlap"
-                        )
+                        self.error = f"Packages {packages[i]['id']} and {packages[j]['id']} overlap"
                         return False
 
         return True

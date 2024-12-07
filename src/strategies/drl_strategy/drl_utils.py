@@ -8,7 +8,7 @@ from gymnasium import spaces
 from stable_baselines3 import A2C, PPO
 import logging
 
-# typing
+# type hinting
 from typing import List, Any, Tuple, Dict
 
 
@@ -577,12 +577,11 @@ class Bin_Packing_Env(gym.Env):
         ]
 
         length, width, height = self.packages_.packages[action[1]].orient(action[2])
-        ## Update the solver package point 2    
+        ## Update the solver package point 2
         self.solver_packages[action[1]].point2 = [
             action[3] + length,
             action[4] + width,
-            self.height_map[action[0]][action[3]][action[4]].item()
-            + height,
+            self.height_map[action[0]][action[3]][action[4]].item() + height,
         ]
 
         ## Update the packages left and placed

@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 from .io import read_allocation, read_packages, read_ulds
 
 
-# typing
+# type hinting
 from typing import List, Tuple
 
 

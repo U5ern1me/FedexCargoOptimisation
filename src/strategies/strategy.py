@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 import time
 import pickle
 
-# typing
+# type hinting
 from typing import Dict, Any, Optional, List, Tuple
 from models.package import Package
 from models.uld import ULD

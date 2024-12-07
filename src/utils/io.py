@@ -6,7 +6,7 @@ import pickle
 from models.package import Package
 from models.uld import ULD
 
-# typing
+# type hinting
 from typing import Dict, Any, Optional, List, Tuple
 
 COST_MAX = 1000000

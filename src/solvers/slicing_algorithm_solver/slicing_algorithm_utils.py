@@ -4,7 +4,7 @@ import random
 import os
 import pandas as pd
 
-# typing
+# type hinting
 from typing import List, Tuple
 
 

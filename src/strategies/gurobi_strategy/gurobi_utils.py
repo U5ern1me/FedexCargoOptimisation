@@ -1,7 +1,7 @@
 import gurobipy as gp
 from gurobipy import GRB
 
-# typing
+# type hinting
 from typing import List, Any, Dict
 from models.package import Package
 from models.uld import ULD

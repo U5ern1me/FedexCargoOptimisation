@@ -1,7 +1,7 @@
 import copy
 from models.uld import ULD
 
-# typing
+# type hinting
 from typing import List, Any
 from models.package import Package
 from hexaly.optimizer import HxModel

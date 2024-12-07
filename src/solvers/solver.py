@@ -2,7 +2,7 @@ from abc import ABC, abstractmethod
 
 import aiohttp
 
-# typing
+# type hinting
 from typing import List, Dict, Any
 from models.uld import ULD
 from models.package import Package

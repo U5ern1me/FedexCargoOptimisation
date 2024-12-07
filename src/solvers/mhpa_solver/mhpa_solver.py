@@ -10,7 +10,7 @@ import random
 from solvers.solver import Solver
 from utils.io import load_config
 
-# typing
+# type hinting
 from typing import Dict, Any, List
 from models.package import Package
 from models.uld import ULD
