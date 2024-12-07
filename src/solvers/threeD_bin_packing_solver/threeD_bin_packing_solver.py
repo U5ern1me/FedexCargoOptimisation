@@ -75,7 +75,7 @@ class ThreeDBinPackingSolver(Solver):
             "Content-Type": "application/json",
         }
 
-        request_url = config.get("base url", "") + "packIntoMany"
+        request_url = config.get("base url", "")
         packages = [self.get_package_data(package) for package in self.packages]
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
         params = {"item_coordinates": 1}
@@ -87,10 +87,8 @@ class ThreeDBinPackingSolver(Solver):
             return
 
         request_body = {
-            "username": config.get("username", ""),
-            "api_key": config.get("api_key", ""),
-            "items": packages,
-            "bins": ulds,
+            "packages": packages,
+            "ulds": ulds,
             "params": params,
         }
 
