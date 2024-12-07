@@ -80,22 +80,9 @@ async def main():
     try:
         SelectedStrategy = strategies[args.strategy]
     except KeyError as e:
-        if args.strategy == "drl":
-            print(
-                "Make sure to comment out the DRLStrategy import in src/strategies/__init__.py and install the necessary dependencies"
-            )
-        elif args.strategy == "gurobi":
-            print(
-                "Make sure to comment out the GurobiStrategy import in src/strategies/__init__.py and install the necessary dependencies"
-            )
-        elif args.strategy == "hexaly":
-            print(
-                "Make sure to comment out the HexalyStrategy import in src/strategies/__init__.py and install the necessary dependencies"
-            )
-        else:
-            if args.debug:
-                logging.error(f"Invalid strategy: {args.strategy}")
-            print(f"Invalid strategy: {args.strategy}")
+        if args.debug:
+            logging.error(f"Invalid strategy: {args.strategy}")
+        print(f"Invalid strategy: {args.strategy}")
         exit()
     except Exception as e:
         if args.debug:
