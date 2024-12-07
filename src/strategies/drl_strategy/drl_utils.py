@@ -575,11 +575,14 @@ class Bin_Packing_Env(gym.Env):
             action[4],
             self.height_map[action[0]][action[3]][action[4]].item(),
         ]
+
+        length, width, height = self.packages_.packages[action[1]].orient(action[2])
+        ## Update the solver package point 2    
         self.solver_packages[action[1]].point2 = [
-            action[3] + self.packages_.packages[action[1]].length,
-            action[4] + self.packages_.packages[action[1]].width,
+            action[3] + length,
+            action[4] + width,
             self.height_map[action[0]][action[3]][action[4]].item()
-            + self.packages_.packages[action[1]].height,
+            + height,
         ]
 
         ## Update the packages left and placed
