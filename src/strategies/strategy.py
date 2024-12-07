@@ -443,8 +443,8 @@ class Strategy(ABC):
 
             # Update the packing data of the ULDs in the map.
             if package.uld_id:
-                packed_volume += package.height * package.width * package.length
-                packed_weight += package.weight
+                packed_volume = package.height * package.width * package.length
+                packed_weight = package.weight
 
                 uld_package_map[package.uld_id]["volume_used"] += packed_volume
                 uld_package_map[package.uld_id]["weight_used"] += packed_weight
