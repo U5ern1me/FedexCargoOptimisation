@@ -6,7 +6,7 @@ sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import aiohttp
 import asyncio
 import time
-
+import random
 from solvers.solver import Solver
 from utils.io import load_config
 
@@ -73,7 +73,25 @@ class MHPASolver(Solver):
             "maxWeight": uld.weight_limit,
         }
 
-    async def _solve(self, session: aiohttp.ClientSession = None):
+    async def _solve_with_retry(
+        self, session: aiohttp.ClientSession = None, max_retries: int = 3
+    ):
+        retries = 0
+        while retries < max_retries:
+            try:
+                await self._send_request(session=session)
+                return
+            except Exception as e:
+                if retries < max_retries - 1:
+                    backoff_time = random.uniform(
+                        2**retries, 2 ** (retries + 1)
+                    )  # Exponential backoff
+                    await asyncio.sleep(backoff_time)
+                    retries += 1
+                else:
+                    raise e
+
+    async def _send_request(self, session: aiohttp.ClientSession = None):
         request_url = config["base url"] + "calculations"
 
         packages = [self.get_package_data(package) for package in self.packages]
@@ -97,12 +115,30 @@ class MHPASolver(Solver):
             },
         }
 
-        async with session.post(request_url, json=request_body) as response:
-            if response.status != 200:
-                res_text = await response.text()
-                raise APIError(res_text)
+        try:
+            async with session.post(request_url, json=request_body) as response:
+                if response.status != 200:
+                    res_text = await response.text()
+                    raise APIError(res_text)
 
-            self.response = await response.json()
+                self.response = await response.json()
+        except APIError as e:
+            raise APIError(f"API error with mhpa solver: {e}")
+        except aiohttp.ClientConnectionResetError as e:
+            raise APIError(f"Connection reset error with mhpa solver: {e}")
+        except aiohttp.ClientConnectionError as e:
+            raise APIError(f"Connection error with mhpa solver: {e}")
+        except aiohttp.ClientResponseError as e:
+            raise APIError(f"Response error with mhpa solver: {e}")
+        except aiohttp.ClientTimeout as e:
+            raise APIError(f"Timeout error with mhpa solver: {e}")
+        except aiohttp.ClientError as e:
+            raise APIError(f"API error with mhpa solver: {e}")
+        except Exception as e:
+            raise Exception(f"Error getting result from mhpa solver: {e}")
+
+    async def _solve(self, session: aiohttp.ClientSession = None):
+        await self._solve_with_retry(session=session, max_retries=3)
 
     async def _get_result(self, session: aiohttp.ClientSession = None):
         if len(self.packages) == 0 or len(self.ulds) == 0:
@@ -112,7 +148,7 @@ class MHPASolver(Solver):
 
         try:
             if self.response is None:
-                raise Exception("No response from sardine can solver")
+                raise Exception("No response from mhpa solver")
 
             res = self.response
             status_url = config["base url"] + res["statusUrl"]
@@ -121,6 +157,10 @@ class MHPASolver(Solver):
             # polling until the result is ready
             while True:
                 async with session.get(status_url) as response:
+                    if response.status != 200:
+                        res_text = await response.text()
+                        raise APIError(res_text)
+
                     res = await response.json()
                     if res["status"] == "DONE":
                         break
@@ -128,23 +168,26 @@ class MHPASolver(Solver):
                 await asyncio.sleep(config["polling interval"])
 
             async with session.get(result_url) as response:
+                if response.status != 200:
+                    res_text = await response.text()
+                    raise APIError(res_text)
+
                 return await response.json()
 
-        # to be checked
         except APIError as e:
-            raise APIError(f"API error with sardine can solver: {e}")
+            raise APIError(f"API error with mhpa solver: {e}")
         except aiohttp.ClientConnectionResetError as e:
-            raise APIError(f"Connection reset error with sardine can solver: {e}")
+            raise APIError(f"Connection reset error with mhpa solver: {e}")
         except aiohttp.ClientConnectionError as e:
-            raise APIError(f"Connection error with sardine can solver: {e}")
+            raise APIError(f"Connection error with mhpa solver: {e}")
         except aiohttp.ClientResponseError as e:
-            raise APIError(f"Response error with sardine can solver: {e}")
+            raise APIError(f"Response error with mhpa solver: {e}")
         except aiohttp.ClientTimeout as e:
-            raise APIError(f"Timeout error with sardine can solver: {e}")
+            raise APIError(f"Timeout error with mhpa solver: {e}")
         except aiohttp.ClientError as e:
-            raise APIError(f"API error with sardine can solver: {e}")
+            raise APIError(f"API error with mhpa solver: {e}")
         except Exception as e:
-            raise Exception(f"Error getting result from sardine can solver: {e}")
+            raise Exception(f"Error getting result from mhpa solver: {e}")
 
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
         num_packages = len(self.packages)
