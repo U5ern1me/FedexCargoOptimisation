@@ -7,7 +7,9 @@ We have approached the 3D Bin Packing Problem by formulating it as a Mixed Integ
 ## How to Run
 
 To run the Hexaly Optimizer and solve the 3D Bin Packing Problem, follow the steps below:
-
+### Step 1:
+Uncomment the hexaly strategy in `src/strategies/__init__.py`
+### Step 2:
 ### Method 1: Modify the Configuration
 
 Ensure that the `main.config` file is correctly set up by changing the `default_strategy` to `hexaly`. This will configure the optimizer to use the Hexaly approach. 
@@ -15,7 +17,7 @@ Ensure that the `main.config` file is correctly set up by changing the `default_
 ### Method 2: Using the command line
 
 ```bash
-python src/main.py -s hexaly -d
+python src/main.py -s hexaly -d -v
 ```
 
 ## hexaly.config
