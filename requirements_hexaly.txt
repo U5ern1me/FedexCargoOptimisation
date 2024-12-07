@@ -1,0 +1,2 @@
+--extra-index-url https://pip.hexaly.com
+hexaly==13.0.20241120
