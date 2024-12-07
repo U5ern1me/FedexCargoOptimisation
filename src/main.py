@@ -107,12 +107,12 @@ async def main():
         logging.error(f"Solver error: {e}")
         print(f"Solver error: {e}")
         print(f"You can check the log file at {log_path} for more information")
-        check = input("Do you want to restart using sardine_can solver (y/n): ")
+        check = input("Do you want to restart using mhpa solver (y/n): ")
         if check == "y":
             if args.debug:
-                logging.info("Restarting using sardine_can solver")
+                logging.info("Restarting using mhpa solver")
             strategy.reset()
-            os.environ["SOLVER"] = "sardine_can"
+            os.environ["SOLVER"] = "mhpa"
             await strategy.run()
         else:
             strategy.end()

@@ -338,7 +338,7 @@ class GeneticAlgorithm:
         num_generations: int = 200,
         num_individuals: int = 120,
         mutation_bracket_size: int = 5,
-        solver: str = "sardine_can",
+        solver: str = "mhpa",
         eliteCProb: float = 0.7,
         seed: Optional[int] = None,
     ):

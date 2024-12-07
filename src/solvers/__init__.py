@@ -1,9 +1,9 @@
 from .threeD_bin_packing_solver import ThreeDBinPackingSolver
-from .sardine_can_solver import SardineCanSolver
+from .mhpa_solver import MHPASolver
 from .slicing_algorithm_solver import SlicingAlgorithmSolver
 
 solvers = {
     "threeD_bin_packing": ThreeDBinPackingSolver,
-    "sardine_can": SardineCanSolver,
+    "mhpa": MHPASolver,
     "slicing_algorithm": SlicingAlgorithmSolver,
 }

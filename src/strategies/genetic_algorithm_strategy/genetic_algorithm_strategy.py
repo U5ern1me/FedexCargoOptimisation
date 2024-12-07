@@ -10,7 +10,7 @@ from .genetic_algorithm_utils import GeneticAlgorithm
 from utils.io import load_config
 
 config = load_config(
-    os.path.join(os.path.dirname(__file__), "genetic_3D_bin_packing.config")
+    os.path.join(os.path.dirname(__file__), "genetic_algorithm.config")
 )
 
 

@@ -16,10 +16,10 @@ from models.package import Package
 from models.uld import ULD
 from utils.api_error import APIError
 
-config = load_config(os.path.join(os.path.dirname(__file__), "sardine_can.config"))
+config = load_config(os.path.join(os.path.dirname(__file__), "mhpa.config"))
 
 
-class SardineCanSolver(Solver):
+class MHPASolver(Solver):
 
     def __init__(self, ulds: List[ULD], packages: List[Package]):
         super().__init__(ulds, packages)

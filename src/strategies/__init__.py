@@ -2,7 +2,7 @@
 # from .drl_strategy import DRLStrategy
 # from .hexaly_strategy import HexalyStrategy
 from .brkga_strategy import BRKGAStrategy
-from .genetic_algorithm import GeneticAlgorithmStrategy
+from .genetic_algorithm_strategy import GeneticAlgorithmStrategy
 from .greedy_heuristic_strategy import GreedyHeuristicStrategy
 
 strategies = {
