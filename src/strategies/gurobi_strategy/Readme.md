@@ -11,13 +11,16 @@ The solver integrates with the Gurobi optimizer, leveraging its efficient enviro
 ## How to run
 
 To run the Gurobi Optimizer and solve the 3D Bin Packing Problem, follow the steps below:
-
+### Step 1: 
+Uncomment the gurobi strategy in `src/strategies/__init__.py`.
+### Step 2:
 ### Method 1: Modify the Configuration
 Ensure that the `main.config` file is correctly set up by setting the `default_strategy` to `gurobi`. This will configure the optimizer to use the Gurobi approach.
 
 ### Method 2: Using the command line
-bash
-python src/main.py -s gurobi -d
+```bash
+python src/main.py -s gurobi -d -v
+```
 
 ## gurobi_strategy.py
 
