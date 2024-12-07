@@ -25,7 +25,7 @@ async def main():
         type=str,
         required=False,
         default=config["default strategy"],
-        help=f"The strategy to use. Has values: {config['strategies']}",
+        help=f"The strategy to use. Has values: {', '.join(config['strategies'])}",
     )
     parser.add_argument(
         "--debug",
@@ -66,7 +66,31 @@ async def main():
         format="%(asctime)s - %(levelname)s - %(message)s",
     )
 
-    SelectedStrategy = strategies[args.strategy]
+    try:
+        SelectedStrategy = strategies[args.strategy]
+    except KeyError as e:
+        if args.strategy == "drl":
+            print(
+                "Make sure to comment out the DRLStrategy import in src/strategies/__init__.py and install the necessary dependencies"
+            )
+        elif args.strategy == "gurobi":
+            print(
+                "Make sure to comment out the GurobiStrategy import in src/strategies/__init__.py and install the necessary dependencies"
+            )
+        elif args.strategy == "hexaly":
+            print(
+                "Make sure to comment out the HexalyStrategy import in src/strategies/__init__.py and install the necessary dependencies"
+            )
+        else:
+            if args.debug:
+                logging.error(f"Invalid strategy: {args.strategy}")
+            print(f"Invalid strategy: {args.strategy}")
+        exit()
+    except Exception as e:
+        if args.debug:
+            logging.error(f"Error loading strategy: {e}")
+        print(f"Error loading strategy: {e}")
+        exit()
 
     # Parse input data
     ulds = read_ulds(config["data path"])
