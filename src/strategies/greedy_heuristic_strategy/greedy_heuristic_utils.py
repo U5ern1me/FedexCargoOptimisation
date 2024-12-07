@@ -1,6 +1,6 @@
 from itertools import combinations
 import logging
-import os
+import aiohttp
 
 # typing
 from typing import List, Any, Callable, Tuple
@@ -196,16 +196,16 @@ def get_sorting_heuristics(
     ratio = average_package_density / average_uld_density
     if ratio < 1.3:
         # Give more priority to volume
-        sorting_heuristic_1 = base_sorting_heuristic_1
-        sorting_heuristic_2 = base_sorting_heuristic_3
+        sorting_heuristic_1 = base_sorting_heuristic_1  # cost / volume
+        sorting_heuristic_2 = base_sorting_heuristic_3  # cost / volume * weight^0.15
     elif ratio < 2.1:
         # Give mixed priority to volume and weight
-        sorting_heuristic_1 = base_sorting_heuristic_3
-        sorting_heuristic_2 = base_sorting_heuristic_4
+        sorting_heuristic_1 = base_sorting_heuristic_3  # cost / volume * weight^0.15
+        sorting_heuristic_2 = base_sorting_heuristic_4  # cost / weight * volume^0.15
     else:
         # Give more priority to weight
-        sorting_heuristic_1 = base_sorting_heuristic_2
-        sorting_heuristic_2 = base_sorting_heuristic_4
+        sorting_heuristic_1 = base_sorting_heuristic_2  # cost / weight
+        sorting_heuristic_2 = base_sorting_heuristic_4  # cost / weight * volume^0.15
 
     return sorting_heuristic_1, sorting_heuristic_2
 
@@ -275,35 +275,36 @@ async def find_splits_economic_packages(
         for uld in uld_group_1:
             message += f"{uld.id} "
         logging.info(message)
-    # binary search for the split point of economic packages
 
-    lower_bound = 0
+    # check if priority packages can fit in uld group 1
+    async with aiohttp.ClientSession() as session:
+        solver_1 = solver(ulds=uld_group_1, packages=priority_packages)
+        await solver_1.solve(only_check_fits=True, session=session)
+        could_fit = await solver_1.get_fit(session=session)
+        if not could_fit:
+            if verbose:
+                logging.info("Could not fit the priority packages in ULD group 1")
+            return None
+
+    # binary search for the split point of economic packages
+    lower_bound = 1
     upper_bound = len(economic_packages)
 
-    while upper_bound - lower_bound > 1:
-        mid = (upper_bound + lower_bound) // 2
+    split_1 = 0
 
-        if mid == lower_bound or mid == upper_bound:
-            break
+    async with aiohttp.ClientSession() as session:
+        while lower_bound <= upper_bound and len(uld_group_1) > 0:
+            mid = (upper_bound + lower_bound) // 2
 
-        partition_1 = [*priority_packages, *economic_packages[:mid]]
-        solver1 = solver(ulds=uld_group_1, packages=partition_1)
-        await solver1.solve(only_check_fits=True)
-
-        could_fit = await solver1.get_fit()
-        if could_fit:
-            lower_bound = mid
-        else:
-            upper_bound = mid
-
-    split_1 = lower_bound
-
-    if split_1 == 0:
-        solver_1 = solver(ulds=uld_group_1, packages=priority_packages)
-        await solver_1.solve(only_check_fits=True)
-        could_fit = await solver_1.get_fit()
-        if not could_fit:
-            return None
+            partition_1 = [*priority_packages, *economic_packages[:mid]]
+            solver1 = solver(ulds=uld_group_1, packages=partition_1)
+            await solver1.solve(only_check_fits=True, session=session)
+            could_fit = await solver1.get_fit(session=session)
+            if could_fit:
+                split_1 = mid
+                lower_bound = mid + 1
+            else:
+                upper_bound = mid - 1
 
     if verbose:
         logging.info(f"Found split 1: {split_1}")
@@ -318,27 +319,103 @@ async def find_splits_economic_packages(
         return (split_1, split_2)
 
     # binary search for the split point of economic packages
-    lower_bound = 0
+    lower_bound = 1
     upper_bound = len(remaining_economic_packages)
-    while upper_bound - lower_bound > 1:
-        mid = (upper_bound + lower_bound) // 2
 
-        if mid == lower_bound or mid == upper_bound:
-            break
+    async with aiohttp.ClientSession() as session:
+        while lower_bound <= upper_bound:
+            mid = (upper_bound + lower_bound) // 2
 
-        partition_2 = remaining_economic_packages[:mid]
-        solver2 = solver(ulds=uld_group_2, packages=partition_2)
-        await solver2.solve(only_check_fits=True)
-        could_fit = await solver2.get_fit()
-        if could_fit:
-            lower_bound = mid
-        else:
-            upper_bound = mid
-
-    # the last valid split point of economic packages
-    split_2 = lower_bound
+            partition_2 = remaining_economic_packages[:mid]
+            solver2 = solver(ulds=uld_group_2, packages=partition_2)
+            await solver2.solve(only_check_fits=True, session=session)
+            could_fit = await solver2.get_fit(session=session)
+            if could_fit:
+                split_2 = mid
+                lower_bound = mid + 1
+            else:
+                upper_bound = mid - 1
 
     if verbose:
         logging.info(f"Found split 2: {split_2}")
 
     return (split_1, split_2)
+
+
+async def find_best_splits_economic_packages(
+    economic_packages: List[Package],
+    priority_packages: List[Package],
+    ulds: List[ULD],
+    uld_splits: List[List[str]],
+    solver: Callable,
+    sorting_heuristic: Callable,
+    k_cost: float,
+    num_p_uld: int,
+    verbose: bool = False,
+) -> Tuple[int, Tuple[int, int], Tuple[List[ULD], List[ULD]]]:
+    """
+    Find the best splits of the economic packages among the given uld splits.
+
+    Args:
+        economic_packages: List of economic packages
+        priority_packages: List of priority packages
+        uld_splits: List of uld splits
+        solver: Solver to check if the packages fit in the ULDs
+        sorting_heuristic: Sorting heuristic to sort the packages
+        verbose: Whether to print the steps
+
+    Returns:
+        cost, (split 1, split 2), (uld group 1, uld group 2)
+    """
+
+    # check if priority packages fit in uld splits if not then it is not a valid split
+    valid_uld_splits = []
+    for uld_split in uld_splits:
+        uld_group_1, uld_group_2 = split_ulds_into_two(ulds, uld_split)
+        if virtual_fit_priority(priority_packages, uld_group_1):
+            valid_uld_splits.append((uld_group_1, uld_group_2))
+
+    if len(valid_uld_splits) == 0:
+        return float("inf"), (0, 0), (None, None)
+
+    if verbose:
+        logging.info(f"Found {len(valid_uld_splits)} valid ULD splits")
+
+    best_split = (0, 0)
+    best_uld_splits = (None, None)
+
+    sorted_economic_packages = sort_packages(economic_packages, sorting_heuristic)
+
+    # find the best split of economic packages for each valid uld split
+    for uld_group_1, uld_group_2 in valid_uld_splits:
+        splits = await find_splits_economic_packages(
+            sorted_economic_packages,
+            priority_packages,
+            uld_group_1,
+            uld_group_2,
+            solver,
+            sorting_heuristic,
+            verbose=verbose,
+        )
+
+        if splits is None:
+            if verbose:
+                logging.info("Could not fit the priority packages in ULD group 1")
+            continue
+
+        # for a split with more economic packages, update the best split
+        if sum(splits) >= sum(best_split):
+            best_split = splits
+            best_uld_splits = (uld_group_1, uld_group_2)
+
+    # calculate the cost of the best split
+    delay_cost = sum(
+        [
+            package.delay_cost
+            for package in sorted_economic_packages[best_split[0] + best_split[1] :]
+        ]
+    )
+    spread_cost = k_cost * num_p_uld
+    total_cost = delay_cost + spread_cost
+
+    return total_cost, best_split, best_uld_splits

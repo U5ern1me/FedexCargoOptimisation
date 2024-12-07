@@ -3,15 +3,20 @@ import sys
 import numpy as np
 import aiohttp
 import asyncio
-from typing import Dict, Any, List, Tuple, Optional
+import random
+from typing import Dict, Any, Optional
 
 # Adjust the import paths as needed
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+import asyncio
+import aiohttp
+import random
 from solvers.solver import Solver
 from utils.io import load_config
 from models.package import Package
 from models.uld import ULD
+from utils.api_error import APIError
 
 # Load configuration
 config = load_config(
@@ -24,17 +29,9 @@ class ThreeDBinPackingSolver(Solver):
         super().__init__(ulds, packages)
         self.package_map: Dict[str, Package] = {}
         self.session: Optional[aiohttp.ClientSession] = None  # To reuse the session
+        self.response = None  # Initialize response attribute
 
     def get_package_data(self, package: Package) -> Dict[str, Any]:
-        """
-        Convert a Package instance into the JSON format required by the 3D bin packing solver.
-
-        Args:
-            package (Package): The package to convert.
-
-        Returns:
-            Dict[str, Any]: The package data in JSON format.
-        """
         self.package_map[package.id] = package
         return {
             "id": package.id,
@@ -47,15 +44,6 @@ class ThreeDBinPackingSolver(Solver):
         }
 
     def get_uld_data(self, uld: ULD) -> Dict[str, Any]:
-        """
-        Convert a ULD instance into the JSON format required by the 3D bin packing solver.
-
-        Args:
-            uld (ULD): The ULD to convert.
-
-        Returns:
-            Dict[str, Any]: The ULD data in JSON format.
-        """
         return {
             "id": uld.id,
             "w": uld.length,
@@ -66,40 +54,40 @@ class ThreeDBinPackingSolver(Solver):
             "q": 1,
         }
 
-    async def _initialize_session(self):
-        """
-        Initialize the aiohttp ClientSession if it hasn't been initialized yet.
-        """
-        if self.session is None:
-            self.session = aiohttp.ClientSession()
+    async def _solve_with_retry(
+        self, session: aiohttp.ClientSession = None, max_retries: int = 3
+    ):
+        retries = 0
+        while retries < max_retries:
+            try:
+                await self._send_request(session=session)
+                return
+            except Exception as e:
+                if retries < max_retries - 1:
+                    backoff_time = random.uniform(
+                        2**retries, 2 ** (retries + 1)
+                    )  # Exponential backoff
+                    await asyncio.sleep(backoff_time)
+                    retries += 1
+                else:
+                    raise e
 
-    async def close_session(self):
-        """
-        Close the aiohttp ClientSession if it's open.
-        """
-        if self.session is not None:
-            await self.session.close()
-            self.session = None
-
-    async def _solve(self) -> None:
-        """
-        Send a POST request to the 3D bin packing solver API to perform the packing.
-
-        Raises:
-            Exception: If the request fails or the response is invalid.
-        """
-        await self._initialize_session()
-
+    async def _send_request(self, session: aiohttp.ClientSession = None):
         headers = {
             "Accept": "application/json",
             "Content-Type": "application/json",
         }
 
         request_url = config.get("base url", "") + "packIntoMany"
-
         packages = [self.get_package_data(package) for package in self.packages]
         ulds = [self.get_uld_data(uld) for uld in self.ulds]
         params = {"item_coordinates": 1}
+
+        if len(packages) == 0 or len(ulds) == 0:
+            self.response = {
+                "bins_packed": [],
+            }
+            return
 
         request_body = {
             "username": config.get("username", ""),
@@ -110,59 +98,138 @@ class ThreeDBinPackingSolver(Solver):
         }
 
         try:
-            async with self.session.post(
+            async with session.post(
                 request_url, headers=headers, json=request_body
             ) as response:
                 if response.status != 200:
-                    text = await response.text()
-                    raise Exception(f"Solver API returned status {response.status}: {text}")
-                self.response = await response.json()
-        except Exception as e:
-            raise Exception(f"Error during solving: {e}")
+                    res_text = await response.text()
+                    raise APIError(res_text)
 
-    async def _get_result(self) -> Dict[str, Any]:
-        """
-        Retrieve and validate the result from the solver.
+                res_json = await response.json()
 
-        Returns:
-            Dict[str, Any]: The solver's response.
+                if res_json["response"]["status"] == -1:
+                    raise APIError(res_json["response"]["errors"][0]["message"])
 
-        Raises:
-            Exception: If no response is available or if parsing fails.
-        """
-        try:
-            if not hasattr(self, 'response') or self.response is None:
-                raise Exception("No response from 3D bin packing solver")
+                self.response = res_json["response"]
 
-            return self.response.get("response", {})
+        except APIError as e:
+            raise APIError(f"API error with 3D bin packing solver: {e}")
+        except aiohttp.ClientConnectionResetError as e:
+            raise APIError(f"Connection reset error with 3D bin packing solver: {e}")
+        except aiohttp.ClientConnectionError as e:
+            raise APIError(f"Connection error with 3D bin packing solver: {e}")
+        except aiohttp.ClientResponseError as e:
+            raise APIError(f"Response error with 3D bin packing solver: {e}")
+        except aiohttp.ClientTimeout as e:
+            raise APIError(f"Timeout error with 3D bin packing solver: {e}")
+        except aiohttp.ClientError as e:
+            raise APIError(f"API error with 3D bin packing solver: {e}")
         except Exception as e:
             raise Exception(f"Error getting result from 3D bin packing solver: {e}")
 
+    async def _solve(self, session: aiohttp.ClientSession = None):
+        await self._solve_with_retry(session=session, max_retries=3)
+
+    async def _get_result(self, session: aiohttp.ClientSession = None):
+        try:
+            if self.response is None:
+                raise APIError("No response from 3D bin packing solver")
+
+            response = self.response
+
+            return response
+
+        except APIError as e:
+            raise APIError(f"API error with 3D bin packing solver: {e}")
+        except Exception as e:
+            raise Exception(f"Error with 3D bin packing solver: {e}")
+
     async def _only_check_fits(self, result: Dict[str, Any]) -> bool:
-        """
-        Check if all packages fit into the ULDs based on the solver's result.
-
-        Args:
-            result (Dict[str, Any]): The solver's result.
-
-        Returns:
-            bool: True if all packages fit, False otherwise.
-        """
         num_packages = len(self.packages)
-
         for _uld in result.get("bins_packed", []):
             for _package in _uld.get("items", []):
                 num_packages -= 1
 
-        return num_packages == 0
+        if num_packages != 0:
+            return False
+
+        uld_package_map = {}
+
+        for _uld in result["bins_packed"]:
+            for package in _uld["items"]:
+                uld_id = _uld["bin_data"]["id"]
+                if uld_id not in uld_package_map:
+                    uld_package_map[uld_id] = []
+
+                uld_package_map[uld_id].append(package)
+
+        for uld_id, packages in uld_package_map.items():
+            uld = next((uld for uld in self.ulds if uld.id == uld_id), None)
+
+            for i in range(len(packages)):
+
+                if (
+                    packages[i]["coordinates"]["x2"] > uld.length
+                    or packages[i]["coordinates"]["y2"] > uld.width
+                    or packages[i]["coordinates"]["z2"] > uld.height
+                ):
+                    return False
+
+                for j in range(i + 1, len(packages)):
+                    x1_min, x1_max = min(
+                        packages[i]["coordinates"]["x1"],
+                        packages[i]["coordinates"]["x2"],
+                    ), max(
+                        packages[i]["coordinates"]["x1"],
+                        packages[i]["coordinates"]["x2"],
+                    )
+                    y1_min, y1_max = min(
+                        packages[i]["coordinates"]["y1"],
+                        packages[i]["coordinates"]["y2"],
+                    ), max(
+                        packages[i]["coordinates"]["y1"],
+                        packages[i]["coordinates"]["y2"],
+                    )
+                    z1_min, z1_max = min(
+                        packages[i]["coordinates"]["z1"],
+                        packages[i]["coordinates"]["z2"],
+                    ), max(
+                        packages[i]["coordinates"]["z1"],
+                        packages[i]["coordinates"]["z2"],
+                    )
+
+                    x2_min, x2_max = min(
+                        packages[j]["coordinates"]["x1"],
+                        packages[j]["coordinates"]["x2"],
+                    ), max(
+                        packages[j]["coordinates"]["x1"],
+                        packages[j]["coordinates"]["x2"],
+                    )
+                    y2_min, y2_max = min(
+                        packages[j]["coordinates"]["y1"],
+                        packages[j]["coordinates"]["y2"],
+                    ), max(
+                        packages[j]["coordinates"]["y1"],
+                        packages[j]["coordinates"]["y2"],
+                    )
+                    z2_min, z2_max = min(
+                        packages[j]["coordinates"]["z1"],
+                        packages[j]["coordinates"]["z2"],
+                    ), max(
+                        packages[j]["coordinates"]["z1"],
+                        packages[j]["coordinates"]["z2"],
+                    )
+
+                    x_overlap = max(0, min(x1_max, x2_max) - max(x1_min, x2_min))
+                    y_overlap = max(0, min(y1_max, y2_max) - max(y1_min, y2_min))
+                    z_overlap = max(0, min(z1_max, z2_max) - max(z1_min, z2_min))
+
+                    if x_overlap > 0 and y_overlap > 0 and z_overlap > 0:
+                        return False
+
+        return True
 
     async def _parse_result(self, result: Dict[str, Any]) -> None:
-        """
-        Parse the solver's result and update package placement details.
-
-        Args:
-            result (Dict[str, Any]): The solver's result.
-        """
         for _uld in result.get("bins_packed", []):
             bin_data = _uld.get("bin_data", {})
             uld_id = bin_data.get("id", "")
@@ -186,36 +253,19 @@ class ThreeDBinPackingSolver(Solver):
                     coordinates.get("z2", 0),
                 )
 
-    async def solve(self) -> None:
-        """
-        Public method to solve the bin packing problem asynchronously.
-        """
-        await self._solve()
+    async def get_packing_json(self, session: aiohttp.ClientSession = None):
+        result = await self._get_result(session=session)
 
-    async def get_result(self) -> Dict[str, Any]:
-        """
-        Public method to retrieve the result after solving.
+        response_json = {}
+        response_json["ulds"] = []
 
-        Returns:
-            Dict[str, Any]: The solver's response.
+        for _uld in result["bins_packed"]:
+            uld_json = {}
+            uld_json["id"] = self.uld_map[_uld["bin_data"]["id"]].id
+            uld_json["packages"] = []
+            for _package in _uld["items"]:
+                package = self.package_map[_package["id"]]
+                uld_json["packages"].append(package.id)
+            response_json["ulds"].append(uld_json)
 
-        Raises:
-            Exception: If the result is invalid.
-        """
-        result = await self._get_result()
-        await self._parse_result(result)
-        return result
-
-    async def __aenter__(self):
-        """
-        Enable usage of the solver with async context managers.
-        """
-        await self._initialize_session()
-        return self
-
-    async def __aexit__(self, exc_type, exc, tb):
-        """
-        Ensure the session is closed when exiting the async context manager.
-        """
-        await self.close_session()
-
+        return response_json
