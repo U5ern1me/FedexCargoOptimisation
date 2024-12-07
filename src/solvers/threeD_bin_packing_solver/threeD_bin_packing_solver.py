@@ -9,9 +9,6 @@ from typing import Dict, Any, Optional
 # Adjust the import paths as needed
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-import asyncio
-import aiohttp
-import random
 from solvers.solver import Solver
 from utils.io import load_config
 from models.package import Package

@@ -45,6 +45,10 @@ async def main():
     if not os.path.exists(config["output path"]):
         os.makedirs(config["output path"])
 
+    # Create log folder if it doesn't exist
+    if not os.path.exists(config["log path"]):
+        os.makedirs(config["log path"])
+
     run_name = f"{args.strategy}-{datetime.now().strftime('%Y-%m-%d_%H-%M')}"
     output_path = os.path.join(config["output path"], run_name)
     log_path = os.path.join(config["log path"], f"{run_name}.log")
