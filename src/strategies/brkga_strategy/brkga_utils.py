@@ -212,7 +212,8 @@ class Bin:
         Returns:
             Weight packing efficiency
         """
-        return sum(box.weight for box in self.boxes) / (self.weight_capacity)
+        weight_occupied = sum(box.weight for box in self.boxes)
+        return weight_occupied / self.weight_capacity if weight_occupied != 0 else 0
 
     def volume_packing_efficiency(self) -> float:
         """
@@ -221,9 +222,8 @@ class Bin:
         Returns:
             Volume packing efficiency
         """
-        return sum(
-            (box.length * box.width * box.height) for box in self.boxes
-        ) / np.prod(self.dimensions)
+        volume_occupied = sum((box.length * box.width * box.height) for box in self.boxes)
+        return volume_occupied / np.prod(self.dimensions) if volume_occupied != 0 else 0
 
 
 class PlacementProcedure:
