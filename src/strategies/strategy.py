@@ -199,7 +199,6 @@ class Strategy(ABC):
                     curr_best_cost = data["cost"]
                     uld_map = _uld_map
                     package_map = _package_map
-                break
 
         if not final_found:
             return False

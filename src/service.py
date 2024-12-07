@@ -77,6 +77,8 @@ class APIService:
                 else:
                     self.solutions[request_id]["status"] = 2
                     self.solutions[request_id]["error"] = strategy.error
+            else:
+                self.solutions[request_id]["status"] = 1
         except Exception as e:
             self.solutions[request_id]["error"] = str(e)
             self.solutions[request_id]["status"] = 2
@@ -87,10 +89,9 @@ class APIService:
         asyncio.run(self.code_runner(request_id))
 
     async def code_runner_wrapper(self, request_id: str):
-        executor = ThreadPoolExecutor(max_workers=3)
-        await self.event_loop.run_in_executor(
-            executor, self.code_runner_sync, request_id
-        )
+        loop = asyncio.get_event_loop()
+        executor = ThreadPoolExecutor(max_workers=4)
+        await loop.run_in_executor(executor, self.code_runner_sync, request_id)
 
     async def upload_files(
         self,
