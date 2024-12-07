@@ -20,19 +20,19 @@ class SlicingAlgorithmSolver(Solver):
         super().__init__(ulds, packages)
         self.package_map = {}
         self.uld_map = {}
-        package_data = [
-            {
-                "box no": pkg.id,
-                "length": pkg.length,
-                "width": pkg.width,
-                "height": pkg.height,
-                "weight": pkg.weight,
+        self.package_specific_df = pd.DataFrame(columns=['box no', 'length', 'width', 'height', 'weight'])
+        for pkg in self.packages:
+            row = {
+                'box no': [pkg.id],
+                'length': [pkg.length],
+                'width': [pkg.width],
+                'height': [pkg.height],
+                'weight': [pkg.weight],
             }
-            for pkg in self.packages
-        ]
+            row = pd.DataFrame(row)
+            self.package_specific_df = pd.concat([self.package_specific_df, row], ignore_index=True)
 
-        # Convert the list of dictionaries into a pandas DataFrame
-        self.package_specific_df = pd.DataFrame(package_data)
+        self.ulds = ulds
         self.response = {}
 
     def remove_packed_bins(self, package_specific_df, packed_bins):
@@ -46,7 +46,7 @@ class SlicingAlgorithmSolver(Solver):
 
         return updated_df
 
-    async def _solve(self):
+    async def _solve(self,session):
         for uld in self.ulds:
             uld_data = {
                 "ULD no": [uld.id],
@@ -58,7 +58,7 @@ class SlicingAlgorithmSolver(Solver):
             # Convert the dictionary into a pandas DataFrame
             uld_specific_df = pd.DataFrame(uld_data)
 
-            packed_bins = pack_package(uld_specific_df, self.package_specific_df)
+            packed_bins = pack_package(udf = uld_specific_df, pdf = self.package_specific_df)
 
             self.response[uld.id] = packed_bins
 
@@ -70,7 +70,6 @@ class SlicingAlgorithmSolver(Solver):
         try:
             if self.response is None:
                 raise Exception("No response from slicing algorithm can solver")
-
             return self.response
         except Exception as e:
             raise Exception(f"Error getting result from slicing algorithm solver: {e}")
@@ -92,24 +91,22 @@ class SlicingAlgorithmSolver(Solver):
                 uld_id = _uld
                 if uld_id not in uld_package_map:
                     uld_package_map[uld_id] = []
-                    package = {
-                        "id": package[0],
-                        "coordinates": {
-                            "x1": package[1],
-                            "y1": package[2],
-                            "z1": package[3],
-                            "x2": package[4],
-                            "y2": package[5],
-                            "z2": package[6],
-                        },
-                    }
+                package = {
+                    "id": package[0],
+                    "coordinates": {
+                        "x1": package[1],
+                        "y1": package[2],
+                        "z1": package[3],
+                        "x2": package[4],
+                        "y2": package[5],
+                        "z2": package[6],
+                    },
+                }
                 uld_package_map[uld_id].append(package)
 
         for uld_id, packages in uld_package_map.items():
             uld = next((uld for uld in self.ulds if uld.id == uld_id), None)
-
             for i in range(len(packages)):
-
                 if (
                     packages[i]["coordinates"]["x2"] > uld.length
                     or packages[i]["coordinates"]["y2"] > uld.width
@@ -178,18 +175,20 @@ class SlicingAlgorithmSolver(Solver):
     async def _parse_result(self, result: Dict[str, Any]):
         for uld in result.keys():
             uld_id = uld
-            for package in result[uld]:
-                package.uld_id = uld_id
-                package.point1 = (
-                    package[1],
-                    package[2],
-                    package[3],
-                )
-                package.point2 = (
-                    package[4],
-                    package[5],
-                    package[6],
-                )
+            for package_ref in result[uld]:
+                for package in self.packages:
+                    if package.id == package_ref[0]:
+                        package.uld_id = uld_id
+                        package.point1 = (
+                            package_ref[1],
+                            package_ref[2],
+                            package_ref[3],
+                        )
+                        package.point2 = (
+                            package_ref[4],
+                            package_ref[5],
+                            package_ref[6],
+                        )
 
     def check_all_fit(self) -> bool:
         """
@@ -201,7 +200,7 @@ class SlicingAlgorithmSolver(Solver):
 
         return True
 
-    async def get_fit(self) -> bool:
+    async def get_fit(self,session) -> bool:
         """
         Get the result of the solving process
         """
