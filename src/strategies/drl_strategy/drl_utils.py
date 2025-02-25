@@ -328,7 +328,7 @@ class Bin_Packing_Env(gym.Env):
             info = {
                 "Terminated": True,
                 "Termination_Reason": "Package already placed",
-                "message": f"Termination : package already placed whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
+                "message": f"Termination : package {self.packages_.package_ids[package_index]} already placed in uld : {self.uld_data.ulds[uld_index].id}",
                 "data": {},
             }
             return termination, info
@@ -389,7 +389,7 @@ class Bin_Packing_Env(gym.Env):
                     info = {
                         "Terminated": True,
                         "Termination_Reason": "Overlap issues",
-                        "message": f"Termination : Overlap issues exceeded whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
+                        "message": f"Termination : Overlap issues whilst placing {self.packages_.package_ids[package_index]} in uld : {self.uld_data.ulds[uld_index].id}",
                         "data": {},
                     }
                     return termination, info
